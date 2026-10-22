@@ -172,7 +172,10 @@ export function RoundView({ report }: { report: RoundReport }) {
                       <ScoreBar value={c.naiveScore} tone={inflated ? "uv" : "ink"} />
                     </td>
                     <td className="max-w-xs px-5 py-4 text-sm text-ink-500">
-                      {c.decision.reasons[0] ?? "Every must-have met, nothing to flag"}
+                      {c.decision.reasons[0] ??
+                        (c.decision.outcome === "reject"
+                          ? `Must-have not met: ${c.requirements.find((r) => r.mustHave && r.verdict === "not_met")?.text ?? "see the requirements"}`
+                          : "Every must-have met, nothing to flag")}
                       {c.decision.reasons.length > 1 && <span className="text-ink-400"> (+{c.decision.reasons.length - 1} more)</span>}
                     </td>
                   </tr>
