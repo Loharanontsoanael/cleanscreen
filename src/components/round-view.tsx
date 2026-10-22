@@ -7,8 +7,8 @@ import type { RoundReport } from "@/lib/types";
 import { CandidateDetail } from "./candidate-detail";
 import { glyph } from "./glyph";
 import { OUTCOME_ORDER, OutcomeBadge } from "./outcome";
-import { PdfReveal } from "./pdf-reveal";
-import { SneakyResume } from "./sneaky-resume";
+import { TwoReadings } from "./two-readings";
+import { HiringDesk } from "./hiring-desk";
 
 /** Raw-file score minus visible-resume score above which the gap is called out. */
 const INFLATION_GAP = 15;
@@ -82,28 +82,27 @@ export function RoundView({ report }: { report: RoundReport }) {
           {/* The white page rises in an arc under the illustration. */}
           <div aria-hidden className="absolute -bottom-px left-1/2 h-[46%] w-[160%] -translate-x-1/2 rounded-[50%_50%_0_0/100%_100%_0_0] bg-white" />
           <div className="relative">
-            <SneakyResume />
+            <HiringDesk />
           </div>
         </div>
       </section>
 
       {showSpotlight && (
-        <section className="mx-auto mt-16 grid max-w-[1160px] items-center gap-10 px-5 sm:px-7 lg:grid-cols-[1fr_1.05fr]">
-          <div>
-            <p className="eyebrow">Same file, read two ways</p>
-            <h2 className="title mt-2 text-[2rem] leading-tight sm:text-[2.6rem]">
-              {spotlight.naiveScore} for an AI. {spotlight.score} for what you can see.
-            </h2>
-            <p className="mt-4 max-w-[46ch] text-ink-500">
-              This is the real first page of {spotlight.label}’s resume. A recruiter sees a junior analyst. An AI
-              reading the file also reads the lines printed in white, and scores the applicant {spotlight.naiveScore}/100.
-              CleanScreen only scores what a person can see.
-            </p>
-            <button onClick={() => open(spotlight.label)} className="btn btn-primary mt-6">
+        <section className="mx-auto mt-16 max-w-[1160px] px-5 sm:px-7">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="eyebrow">Same file, read two ways</p>
+              <h2 className="title mt-2 max-w-[28ch] text-[2rem] leading-tight sm:text-[2.6rem]">
+                {spotlight.naiveScore} for an AI. {spotlight.score} for what you can see.
+              </h2>
+            </div>
+            <button onClick={() => open(spotlight.label)} className="btn btn-secondary">
               Open the application {glyph(ArrowRight01Icon, 18, 2)}
             </button>
           </div>
-          <PdfReveal c={spotlight} />
+          <div className="mt-8">
+            <TwoReadings c={spotlight} />
+          </div>
         </section>
       )}
 
