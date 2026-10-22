@@ -97,14 +97,14 @@ export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machi
       blocks.push(<p key={i} className="text-[24px] leading-tight font-bold tracking-tight text-ink-900">{line()}</p>);
       header++;
     } else if (header === 1) {
-      blocks.push(<p key={i} className="mt-0.5 text-[15px] font-semibold text-brand-700">{line()}</p>);
+      blocks.push(<p key={i} className="mt-0.5 text-[15px] font-semibold text-ink-500">{line()}</p>);
       header++;
     } else if (header === 2) {
       blocks.push(<p key={i} className="mt-1.5 text-[12px] text-ink-400">{line()}</p>);
       header++;
     } else if (isHeading(raw)) {
       blocks.push(
-        <p key={i} className="mt-6 mb-2 border-b border-brand-200 pb-1 text-[11px] font-bold tracking-[0.12em] text-brand-700 uppercase">
+        <p key={i} className="mt-6 mb-2 border-b border-ink-200 pb-1 text-[11px] font-bold tracking-[0.12em] text-ink-900 uppercase">
           {line()}
         </p>,
       );
