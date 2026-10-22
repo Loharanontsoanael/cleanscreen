@@ -112,7 +112,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
 
   const run = (l: TextLine, skip = 0) => <Run line={l} hidden={hidden} machine={machine} skip={skip} />;
   const title = (t: string) =>
-    t ? <h3 className="mb-2.5 text-[11px] font-black tracking-[0.16em] text-ink-900 uppercase">{t.toLowerCase()}</h3> : null;
+    t ? <h3 className="mb-3.5 text-[12.5px] font-black tracking-[0.16em] text-ink-900 uppercase">{t.toLowerCase()}</h3> : null;
 
   // A PDF wraps long sentences onto several lines: glue plain continuation lines to the line before.
   // A wrapped sentence continues in lower case, or after a comma, hyphen or "and"; a new item starts a new line.
@@ -138,12 +138,12 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
       if (isDates(l.text) && ls[i + 1]) {
         const [role, company] = ls[i + 1].text.split(/,\s*(.+)/);
         out.push(
-          <div key={i} className="mt-4 first:mt-0">
+          <div key={i} className="mt-6 first:mt-0">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[14px] font-bold text-ink-900">{company ? role : run(ls[i + 1])}</p>
-              <p className="shrink-0 text-[11.5px] text-ink-400">{run(l)}</p>
+              <p className="text-[16px] font-bold text-ink-900">{company ? role : run(ls[i + 1])}</p>
+              <p className="shrink-0 text-[13px] text-ink-400">{run(l)}</p>
             </div>
-            {company && <p className="mb-1 text-[12.5px] font-bold text-ink-500">{company}</p>}
+            {company && <p className="mb-1.5 text-[14px] font-bold text-ink-500">{company}</p>}
           </div>,
         );
         i++;
@@ -151,8 +151,8 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
         const skip = l.chars.findIndex((ch) => !/[\s•\-*]/.test(ch));
         const { parts, last } = flowing(ls, i, skip);
         out.push(
-          <p key={i} className="relative mt-1 pl-3.5 text-[12.5px] leading-snug text-ink-700">
-            <span className="absolute top-[0.55em] left-0 size-1 rounded-full bg-ink-400" />
+          <p key={i} className="relative mt-1.5 pl-4 text-[14px] leading-normal text-ink-700">
+            <span className="absolute top-[0.6em] left-0.5 size-1.5 rounded-full bg-ink-400" />
             {parts}
           </p>,
         );
@@ -160,7 +160,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
       } else {
         const { parts, last } = flowing(ls, i);
         out.push(
-          <p key={i} className="mt-1 text-[12.5px] leading-relaxed text-ink-700">
+          <p key={i} className="mt-1 text-[14px] leading-relaxed text-ink-700">
             {parts}
           </p>,
         );
@@ -174,7 +174,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
     ls.length === 1 && !hidden.some((h) => h.end > ls[0].from && h.start < ls[0].from + ls[0].chars.length) ? (
       <div className="flex flex-wrap gap-1.5">
         {ls[0].text.split(/,\s*/).map((s) => (
-          <span key={s} className="rounded-[4px] bg-white px-2 py-0.5 text-[11.5px] font-bold text-ink-700 ring-1 ring-ink-200">
+          <span key={s} className="rounded-[4px] bg-white px-2.5 py-1 text-[13px] font-bold text-ink-700 ring-1 ring-ink-200">
             {s}
           </span>
         ))}
@@ -194,23 +194,23 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
 
   return (
     <div className={`${resumeFont.className} flex min-h-full flex-col`}>
-      <header className="flex items-center gap-5 px-8 pt-9 pb-7 sm:px-10">
-        <div className="grid size-16 shrink-0 place-items-center rounded-full bg-ink-100 text-[20px] font-black text-ink-500">
+      <header className="flex items-center gap-6 px-8 pt-12 pb-10 sm:px-12">
+        <div className="grid size-20 shrink-0 place-items-center rounded-full bg-ink-100 text-[20px] font-black text-ink-500">
           {initials || glyph(UserIcon, 26, 1.8)}
         </div>
         <div className="min-w-0">
-          <p className="text-[28px] leading-none font-black tracking-[-0.01em] text-ink-900">{name}</p>
-          {headline && <p className="mt-2 text-[13px] font-bold tracking-[0.14em] text-ink-500 uppercase">{run(headline)}</p>}
+          <p className="text-[34px] leading-none font-black tracking-[-0.01em] text-ink-900">{name}</p>
+          {headline && <p className="mt-2.5 text-[14px] font-bold tracking-[0.14em] text-ink-500 uppercase">{run(headline)}</p>}
         </div>
       </header>
 
       <div className="grid flex-1 border-t border-ink-100 sm:grid-cols-[34%_1fr]">
-        <aside className="space-y-7 bg-ink-50 px-8 py-7 sm:px-7">
+        <aside className="space-y-9 bg-ink-50 px-8 py-10 sm:px-8">
           <section>
             {title("CONTACT")}
             <ul className="space-y-2">
               {contacts.map((p, i) => (
-                <li key={i} className="flex items-center gap-2 text-[12px] text-ink-700">
+                <li key={i} className="flex items-center gap-2.5 text-[13.5px] text-ink-700">
                   <span className="text-ink-400">{glyph(CONTACT_ICON[p.type], 14, 1.8)}</span>
                   {p.value}
                 </li>
@@ -227,7 +227,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
             ))}
         </aside>
 
-        <div className="space-y-7 px-8 py-7 sm:px-9">
+        <div className="space-y-9 px-8 py-10 sm:px-10">
           {sections
             .filter((s) => !SIDEBAR.test(s.title))
             .map((s, i) => (
@@ -238,7 +238,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
             ))}
           {hiddenLines.length > 0 && (
             // Where the hidden lines sit on the page: blank to a reader, legible to a text extractor.
-            <section className="text-[12.5px] leading-relaxed text-ink-700">
+            <section className="text-[14px] leading-relaxed text-ink-700">
               {hiddenLines.map((l, i) => (
                 <p key={i}>{run(l)}</p>
               ))}
