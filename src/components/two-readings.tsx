@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { CandidateReport } from "@/lib/types";
 
 /** The line after a section heading of the visible resume, e.g. the first line under SUMMARY. */
@@ -22,8 +25,8 @@ function Reading({
   ];
   return (
     <div className={`panel flex flex-col p-6 sm:p-7 ${machine ? "panel-key border-brand-200" : ""}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span className={`pill ${machine ? "" : "pill-neutre"}`}>{machine ? "As an AI reads it" : "As you see it"}</span>
+      <div className="flex items-center justify-between gap-3 max-md:justify-end">
+        <span className={`pill hidden md:inline-flex ${machine ? "" : "pill-neutre"}`}>{machine ? "As an AI reads it" : "As you see it"}</span>
         <p className="figure text-[2.6rem]" style={machine ? { color: "var(--color-brand-600)" } : undefined}>
           {machine ? c.naiveScore : c.score}
           <span className="unit">/100</span>
@@ -49,12 +52,35 @@ function Reading({
   );
 }
 
-/** One applicant's resume, side by side: the page a person sees and the text an AI extracts. */
+/**
+ * One applicant's resume read two ways: the page a person sees and the text an AI extracts.
+ * Side by side on wide screens; on a phone, one card with a switch so the content isn't repeated.
+ */
 export function TwoReadings({ c }: { c: CandidateReport }) {
+  const [machine, setMachine] = useState(true);
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:items-start">
-      <Reading c={c} machine={false} />
-      <Reading c={c} machine />
-    </div>
+    <>
+      <div className="hidden gap-4 md:grid md:grid-cols-2 md:items-start">
+        <Reading c={c} machine={false} />
+        <Reading c={c} machine />
+      </div>
+      <div className="md:hidden">
+        <div className="mb-3 grid grid-cols-2 gap-1 rounded-full bg-ink-50 p-1 text-[13px] font-semibold">
+          {[false, true].map((m) => (
+            <button
+              key={String(m)}
+              onClick={() => setMachine(m)}
+              aria-pressed={machine === m}
+              className={`rounded-full py-2 transition-colors ${
+                machine === m ? (m ? "bg-brand-600 text-white" : "bg-brand-900 text-white") : "text-ink-500"
+              }`}
+            >
+              {m ? "As an AI reads it" : "As you see it"}
+            </button>
+          ))}
+        </div>
+        <Reading c={c} machine={machine} />
+      </div>
+    </>
   );
 }
