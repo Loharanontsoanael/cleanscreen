@@ -5,8 +5,8 @@ import type { CandidateReport } from "@/lib/types";
 import { ResumeText } from "./resume-paper";
 
 const RADIUS = 140;
-/** An A4 sheet (210 x 297 mm); a longer resume simply grows past it. */
-const PAPER = "rounded-[4px] aspect-[210/297]";
+/** At least one A4 sheet (210 x 297 mm); a longer resume grows the page. */
+const PAPER = "rounded-[4px]";
 
 /**
  * The resume as a person sees it, with an ultraviolet lamp on top. Under the
@@ -69,7 +69,7 @@ export function UvLamp({ c }: { c: CandidateReport }) {
         onPointerDown={move}
         className={`relative touch-none select-none ${full ? "" : "cursor-none"}`}
       >
-        <div className={`${PAPER} bg-white shadow-[0_1px_2px_rgb(15_27_45/0.08),0_12px_32px_-12px_rgb(15_27_45/0.28)] ring-1 ring-ink-100`}>
+        <div className={`${PAPER} aspect-[210/297] bg-white shadow-[0_1px_2px_rgb(15_27_45/0.08),0_12px_32px_-12px_rgb(15_27_45/0.28)] ring-1 ring-ink-100`}>
           <ResumeText c={c} machine={false} />
         </div>
         <div

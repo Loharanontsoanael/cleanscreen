@@ -1,0 +1,84 @@
+import { analyseRound, type ProgressEvent } from "@/lib/analysis";
+import type { CandidateInput, JobInput, Requirement } from "@/lib/types";
+
+export const maxDuration = 300;
+
+const MAX_FILES = 10;
+const MAX_BYTES = 3 * 1024 * 1024;
+const RUNS_PER_HOUR = Number(process.env.SCREEN_RUNS_PER_HOUR ?? 5);
+
+// Live runs spend real Clocked credits, so each visitor gets a few per hour. In memory on purpose:
+// nothing about a visitor or their files is stored.
+const runs = new Map<string, number[]>();
+function allow(ip: string): boolean {
+  const now = Date.now();
+  const recent = (runs.get(ip) ?? []).filter((t) => now - t < 3_600_000);
+  if (recent.length >= RUNS_PER_HOUR) return false;
+  runs.set(ip, [...recent, now]);
+  return true;
+}
+
+function fail(status: number, error: string) {
+  return Response.json({ error }, { status });
+}
+
+/** Screens uploaded resumes against a job, streaming progress as NDJSON and ending with the report. */
+export async function POST(request: Request) {
+  if (process.env.SCREEN_DISABLED === "1") return fail(503, "Live screening is paused. The demo round still works.");
+
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return fail(400, "Send the job and resumes as a form upload.");
+  }
+
+  const title = String(form.get("title") ?? "").trim().slice(0, 120);
+  const description = String(form.get("description") ?? "").trim().slice(0, 2000);
+  let requirements: Requirement[] = [];
+  try {
+    const raw = JSON.parse(String(form.get("requirements") ?? "[]")) as { text?: unknown; mustHave?: unknown }[];
+    requirements = raw
+      .map((r, i) => ({ id: `req-${i + 1}`, text: String(r.text ?? "").trim().slice(0, 200), mustHave: Boolean(r.mustHave) }))
+      .filter((r) => r.text)
+      .slice(0, 8);
+  } catch {
+    return fail(400, "Requirements must be a list.");
+  }
+  if (!title) return fail(400, "Add a job title.");
+  if (!requirements.length) return fail(400, "Add at least one requirement.");
+
+  const files = form.getAll("resumes").filter((f): f is File => f instanceof File);
+  if (!files.length) return fail(400, "Add at least one resume as a PDF.");
+  if (files.length > MAX_FILES) return fail(400, `Screen at most ${MAX_FILES} resumes at a time.`);
+
+  const candidates: CandidateInput[] = [];
+  for (const [i, file] of files.entries()) {
+    if (file.size > MAX_BYTES) return fail(413, `${file.name} is larger than 3 MB.`);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") return fail(400, `${file.name} is not a PDF.`);
+    candidates.push({ id: `upload-${i + 1}`, resumePdf: bytes, evidence: [] });
+  }
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  if (!allow(ip)) return fail(429, `You can screen ${RUNS_PER_HOUR} rounds an hour. Try again later, or explore the demo round.`);
+
+  const job: JobInput = { title, description, requirements };
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: ProgressEvent | { type: "report"; report: unknown } | { type: "error"; error: string }) =>
+        controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+      try {
+        const report = await analyseRound(job, candidates, send);
+        send({ type: "report", report });
+      } catch (err) {
+        console.error("screening failed", err);
+        send({ type: "error", error: "Screening stopped before it finished. Please try again." });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(stream, { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" } });
+}

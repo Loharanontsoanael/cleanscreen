@@ -17,11 +17,18 @@ interface TextLine {
   text: string;
 }
 
-const isHeading = (l: string) => l.length > 2 && l.length < 30 && l === l.toUpperCase() && /[A-Z]/.test(l);
+/** "P R O F I L E" or "W O R K   E X P E R I E N C E" (letter-spaced headings) read as normal words. */
+function unspace(l: string): string {
+  return l
+    .split(/\s{2,}/)
+    .map((w) => (/^(\S\s)+\S$/.test(w) ? w.replace(/\s/g, "") : w))
+    .join(" ");
+}
+const isHeading = (l: string) => l.length > 3 && l.length < 40 && l === l.toUpperCase() && /[A-Z]/.test(l);
 const isDates = (l: string) => /^\d{4}\s*[-–]\s*(present|\d{4})$/i.test(l);
 const isBullet = (l: string) => /^[•\-*]\s/.test(l);
 /** Sections that belong in the sidebar of a two-column resume. */
-const SIDEBAR = /^(SKILLS|EDUCATION|CERTIFICATIONS?|LANGUAGES|TOOLS|INTERESTS)$/;
+const SIDEBAR = /(SKILL|EDUCATION|CERTIFICATION|LANGUAGE|TOOL|INTEREST|HOBBIES)/;
 
 /** One run of text; hidden spans are invisible on the page and glow under the UV lamp. */
 function Run({ line, hidden, machine, skip = 0 }: { line: TextLine; hidden: Span[]; machine: boolean; skip?: number }) {
@@ -87,13 +94,16 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
   const content = lines.filter((l) => l.text);
   const fullyHidden = (l: TextLine) => hidden.some((h) => h.start <= l.from && h.end >= l.from + l.chars.length);
 
-  // The first lines are the name, the headline and the contact line; personal details render from /pii.
-  const headline = content[1];
+  // Everything before the first section heading is the header: name, headline, contact lines.
+  // Personal details render from /pii, so only the headline is taken from the text.
+  const firstHeading = content.findIndex((l, i) => i > 0 && isHeading(l.text));
+  const headerEnd = firstHeading > 0 ? firstHeading : Math.min(3, content.length);
+  const headline = content[1] && 1 < headerEnd ? content[1] : undefined;
   const sections: { title: string; lines: TextLine[] }[] = [];
   const hiddenLines: TextLine[] = [];
-  for (const l of content.slice(3)) {
+  for (const l of content.slice(headerEnd)) {
     if (fullyHidden(l)) hiddenLines.push(l);
-    else if (isHeading(l.text)) sections.push({ title: l.text, lines: [] });
+    else if (isHeading(l.text)) sections.push({ title: unspace(l.text), lines: [] });
     else {
       if (!sections.length) sections.push({ title: "", lines: [] });
       sections[sections.length - 1].lines.push(l);
@@ -105,8 +115,13 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
     t ? <h3 className="mb-2.5 text-[11px] font-black tracking-[0.16em] text-ink-900 uppercase">{t.toLowerCase()}</h3> : null;
 
   // A PDF wraps long sentences onto several lines: glue plain continuation lines to the line before.
+  // A wrapped sentence continues in lower case, or after a comma, hyphen or "and"; a new item starts a new line.
   const joins = (prev: TextLine, next: TextLine) =>
-    !isHeading(next.text) && !isDates(next.text) && !isBullet(next.text) && fullyHidden(prev) === fullyHidden(next);
+    !isHeading(next.text) &&
+    !isDates(next.text) &&
+    !isBullet(next.text) &&
+    fullyHidden(prev) === fullyHidden(next) &&
+    (/^\p{Ll}/u.test(next.text) || /([,\-–(/]|\band|\bor|\bthe|\bof|\bin)$/i.test(prev.text));
   const flowing = (ls: TextLine[], i: number, skip = 0) => {
     const parts: ReactNode[] = [<Fragment key={0}>{run(ls[i], skip)}</Fragment>];
     while (ls[i + 1] && joins(ls[i], ls[i + 1]) && !isDates(ls[i].text)) {
@@ -170,14 +185,18 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
 
   // Every demo applicant is fictional, so the page shows their test details as written.
   const contacts = c.piiFound.filter((p) => CONTACT_ICON[p.type]);
-  const name = c.name ?? c.label;
-  const initials = c.name ? c.name.split(" ").map((w) => w[0]).join("").slice(0, 2) : null;
+  // Prefer the name as printed at the top of the page (often letter-spaced); fall back to what /pii found.
+  const printed = content[0] && headerEnd > 0 ? unspace(content[0].text) : "";
+  const looksLikeName = printed && printed.split(/\s+/).length <= 5 && !/[@\d]/.test(printed);
+  const raw = looksLikeName ? printed : (c.name ?? c.label);
+  const name = raw === raw.toUpperCase() ? raw.toLowerCase().replace(/\b\p{L}/gu, (ch) => ch.toUpperCase()) : raw;
+  const initials = name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className={`${resumeFont.className} flex h-full flex-col overflow-hidden`}>
+    <div className={`${resumeFont.className} flex min-h-full flex-col`}>
       <header className="flex items-center gap-5 px-8 pt-9 pb-7 sm:px-10">
         <div className="grid size-16 shrink-0 place-items-center rounded-full bg-ink-100 text-[20px] font-black text-ink-500">
-          {initials ?? glyph(UserIcon, 26, 1.8)}
+          {initials || glyph(UserIcon, 26, 1.8)}
         </div>
         <div className="min-w-0">
           <p className="text-[28px] leading-none font-black tracking-[-0.01em] text-ink-900">{name}</p>
@@ -203,7 +222,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
             .map((s) => (
               <section key={s.title}>
                 {title(s.title)}
-                {s.title === "SKILLS" ? skillsChips(s.lines) : body(s.lines)}
+                {/SKILL/.test(s.title) ? skillsChips(s.lines) : body(s.lines)}
               </section>
             ))}
         </aside>
@@ -213,7 +232,7 @@ export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolea
             .filter((s) => !SIDEBAR.test(s.title))
             .map((s, i) => (
               <section key={`${s.title}${i}`}>
-                {title(s.title === "SUMMARY" ? "PROFILE" : s.title)}
+                {title(/SUMMARY/.test(s.title) ? "PROFILE" : s.title)}
                 {body(s.lines)}
               </section>
             ))}

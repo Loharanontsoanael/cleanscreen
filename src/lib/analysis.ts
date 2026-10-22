@@ -405,11 +405,16 @@ async function analyseCandidate(
   for (const c of claims ?? []) if (c.verdict === "contradicted" && c.probability >= CONTRADICTION_THRESHOLD) reasons.push(`Claim contradicted by records: "${c.claim}"`);
   if (coverLetterConflicts.length) reasons.push("Resume and cover letter disagree");
   if (code && code.verdict !== "benign") reasons.push(`Take-home code is ${code.verdict}: ${code.category ?? ""}`.trim());
-  let outcome: CandidateReport["decision"]["outcome"] = reasons.length ? "flagged" : recommendation;
-  if (outcome === "advance" && requirements.some((r) => r.mustHave && r.verdict !== "met")) {
-    outcome = "human_review";
-    reasons.push("A must-have requirement is not clearly met");
-  }
+  // Without an integrity finding, the must-haves decide: all met advances, one clearly missed is
+  // not a match, anything uncertain goes to a person. The scorecard's own call is kept for reference.
+  const mustHaves = requirements.filter((r) => r.mustHave);
+  const outcome: CandidateReport["decision"]["outcome"] = reasons.length
+    ? "flagged"
+    : mustHaves.every((r) => r.verdict === "met")
+      ? "advance"
+      : mustHaves.some((r) => r.verdict === "not_met" && r.probabilities.not_met >= 0.8)
+        ? "reject"
+        : "human_review";
 
   return {
     id: input.id,
