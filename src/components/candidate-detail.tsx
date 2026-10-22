@@ -1,25 +1,18 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Cancel01Icon, CheckmarkCircle02Icon, HelpCircleIcon } from "@hugeicons/core-free-icons";
 import type { CandidateReport, DuplicateFinding, Verdict } from "@/lib/types";
 import { glyph } from "./glyph";
 import { MarkedText } from "./marked-text";
 import { OutcomeBadge } from "./outcome";
-import { ResumeText } from "./resume-paper";
+import { UvLamp } from "./uv-lamp";
 
 const VERDICT_ICON: Record<Verdict, ReactNode> = {
   met: <span className="text-pass" aria-label="Met">{glyph(CheckmarkCircle02Icon, 18, 2)}</span>,
   not_met: <span className="text-alerte" aria-label="Not met">{glyph(Cancel01Icon, 18, 2)}</span>,
   not_established: <span className="text-hold" aria-label="Not shown on the resume">{glyph(HelpCircleIcon, 18, 2)}</span>,
 };
-
-/** Swaps the applicant's name (full or first) for "the applicant" in quoted records. */
-function anonymise(text: string, c: CandidateReport, revealed: boolean): string {
-  if (revealed || !c.name) return text;
-  const first = c.name.split(" ")[0];
-  return text.replaceAll(c.name, "the applicant").replace(new RegExp(`\\b${first}\\b`, "g"), "the applicant");
-}
 
 /** One plain sentence: what a reviewer needs to know first. */
 function verdict(c: CandidateReport, copied: boolean): string {
@@ -36,11 +29,11 @@ function verdict(c: CandidateReport, copied: boolean): string {
 }
 
 /** The evidence for the verdict, shown once. */
-function Proof({ c, duplicates, revealed }: { c: CandidateReport; duplicates: DuplicateFinding[]; revealed: boolean }) {
+function Proof({ c, duplicates }: { c: CandidateReport; duplicates: DuplicateFinding[] }) {
   const pairs: { said: string; record: string; source: string }[] = [];
   for (const x of c.claims ?? []) {
     if (x.verdict === "contradicted" && x.probability >= 0.8 && x.evidence) {
-      pairs.push({ said: x.claim, record: anonymise(x.evidence.quote, c, revealed), source: x.evidence.document });
+      pairs.push({ said: x.claim, record: x.evidence.quote, source: x.evidence.document });
     }
   }
   for (const k of c.coverLetterConflicts) pairs.push({ said: k.resume, record: k.coverLetter, source: "Cover letter" });
@@ -80,9 +73,7 @@ export function CandidateDetail({
   duplicates: DuplicateFinding[];
   onBack: () => void;
 }) {
-  const [revealed, setRevealed] = useState(false);
   const hasHidden = c.hidden.some((h) => h.intent !== "benign") || c.injection.verdict !== "benign";
-  const [machine, setMachine] = useState(hasHidden);
   const mine = duplicates.filter((d) => d.a === c.label || d.b === c.label);
   const credits = c.trail.reduce((s, t) => s + (t.credits ?? 0), 0);
 
@@ -92,13 +83,10 @@ export function CandidateDetail({
         <button onClick={onBack} className="font-medium text-ink-500 hover:text-brand-900">
           ← All applicants
         </button>
-        <button onClick={() => setRevealed(!revealed)} className="font-medium text-ink-500 hover:text-brand-900">
-          {revealed ? "Hide identity" : "Reveal identity"}
-        </button>
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <h1 className="title text-[2.4rem] leading-none">{revealed && c.name ? c.name : c.label}</h1>
+        <h1 className="title text-[2.4rem] leading-none">{c.label}</h1>
         <OutcomeBadge outcome={c.decision.outcome} />
       </div>
       <p className="mt-4 text-[1.35rem] leading-snug font-semibold text-brand-900">{verdict(c, mine.length > 0)}</p>
@@ -109,20 +97,14 @@ export function CandidateDetail({
       )}
 
       <div className="mt-10">
-        <Proof c={c} duplicates={mine} revealed={revealed} />
+        <Proof c={c} duplicates={mine} />
       </div>
 
       <section className={hasHidden || !c.claims ? "mt-2" : "mt-12"}>
-        <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-[17px] font-extrabold text-brand-900">Resume</h2>
-          <button onClick={() => setMachine(!machine)} className="text-sm font-medium text-brand-600 hover:text-brand-700">
-            {machine ? "Show what a person sees" : "Show what an AI reads"}
-          </button>
+        <h2 className="text-[17px] font-extrabold text-brand-900">Resume</h2>
+        <div className="mt-3">
+          <UvLamp c={c} />
         </div>
-        <div className="mt-3 rounded-[6px] bg-white px-8 py-9 shadow-[0_1px_2px_rgb(15_27_45/0.08),0_12px_32px_-12px_rgb(15_27_45/0.28)] ring-1 ring-ink-100 sm:px-12 sm:py-12">
-          <ResumeText c={c} machine={machine} revealed={revealed} />
-        </div>
-        <p className="mt-2 text-[13px] text-ink-400">Name and contact details were removed before scoring.</p>
       </section>
 
       <section className="mt-12">

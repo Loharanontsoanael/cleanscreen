@@ -233,6 +233,30 @@ body {
 
 }
 
+/* The resume under a black light: dark page, faint ink, and the hidden ink glowing. */
+.uv-theme {
+  background: #150d33;
+}
+.uv-theme * {
+  color: rgb(196 181 253 / 0.32) !important;
+  border-color: rgb(167 139 250 / 0.22) !important;
+}
+.uv-theme aside,
+.uv-theme .bg-ink-100,
+.uv-theme .bg-white {
+  background: rgb(167 139 250 / 0.07) !important;
+}
+.uv-theme .uv-hit,
+.uv-theme .uv-hit * {
+  background: transparent;
+  color: #f5f0ff !important;
+  text-shadow: 0 0 6px #b69cff, 0 0 18px #7c4dff, 0 0 32px #6b3df5;
+}
+.uv-hit {
+  color: var(--color-brand-700);
+  background: var(--color-brand-100);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .uv-reveal {
     animation: uv-reveal 700ms ease-out both;

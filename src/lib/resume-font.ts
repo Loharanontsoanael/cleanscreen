@@ -1,4 +1,4 @@
-import { EB_Garamond } from "next/font/google";
+import { Lato } from "next/font/google";
 
-/** A classic resume typeface, used only on the rendered resume page. */
-export const resumeFont = EB_Garamond({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
+/** A common professional resume typeface, used only on the rendered resume. */
+export const resumeFont = Lato({ subsets: ["latin"], weight: ["400", "700", "900"], display: "swap" });

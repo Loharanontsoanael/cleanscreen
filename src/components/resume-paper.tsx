@@ -1,30 +1,32 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
+import { Calendar03Icon, Location01Icon, Mail01Icon, SmartPhone01Icon, UserIcon } from "@hugeicons/core-free-icons";
 import type { CandidateReport } from "@/lib/types";
 import { resumeFont } from "@/lib/resume-font";
+import { glyph } from "./glyph";
 import { locate } from "./marked-text";
-
-const MASK = "█";
-
-/** Replaces personal details with same-length blocks, so Clocked's offsets into the text stay valid. */
-function mask(text: string, values: string[]): string {
-  let out = text;
-  for (const v of values) if (v.trim().length > 1) out = out.replaceAll(v, MASK.repeat(Array.from(v).length));
-  return out;
-}
-
-const isHeading = (l: string) => l.length > 2 && l.length < 30 && l === l.toUpperCase() && /[A-Z]/.test(l);
-const isDates = (l: string) => /^\d{4}\s*[-–]\s*(present|\d{4})$/i.test(l);
-const isBullet = (l: string) => /^[•\-*]\s/.test(l);
 
 interface Span {
   start: number;
   end: number;
 }
+interface TextLine {
+  chars: string[];
+  from: number;
+  text: string;
+}
 
-/** One line of the resume, with masked details as bars and hidden spans drawn per view. */
-function Line({ chars, from, hidden, machine }: { chars: string[]; from: number; hidden: Span[]; machine: boolean }) {
+const isHeading = (l: string) => l.length > 2 && l.length < 30 && l === l.toUpperCase() && /[A-Z]/.test(l);
+const isDates = (l: string) => /^\d{4}\s*[-–]\s*(present|\d{4})$/i.test(l);
+const isBullet = (l: string) => /^[•\-*]\s/.test(l);
+/** Sections that belong in the sidebar of a two-column resume. */
+const SIDEBAR = /^(SKILLS|EDUCATION|CERTIFICATIONS?|LANGUAGES|TOOLS|INTERESTS)$/;
+
+/** One run of text; hidden spans are invisible on the page and glow under the UV lamp. */
+function Run({ line, hidden, machine, skip = 0 }: { line: TextLine; hidden: Span[]; machine: boolean; skip?: number }) {
+  const chars = line.chars.slice(skip);
+  const from = line.from + skip;
   const to = from + chars.length;
   const cuts = new Set([0, chars.length]);
   for (const h of hidden) {
@@ -38,36 +40,34 @@ function Line({ chars, from, hidden, machine }: { chars: string[]; from: number;
     const [a, b] = [points[i], points[i + 1]];
     const piece = chars.slice(a, b).join("");
     const isHidden = hidden.some((h) => h.start <= from + a && h.end >= from + b);
-    const content = piece.split(/(█+)/g).map((p, j) =>
-      p.startsWith(MASK) ? (
-        <span key={j} className="rounded-[3px] bg-ink-100 text-transparent select-none">
-          {p}
-        </span>
-      ) : (
-        <Fragment key={j}>{p}</Fragment>
-      ),
-    );
     out.push(
       isHidden ? (
-        // On the page this text is invisible; the machine view lights it up where it sits.
-        <span key={a} className={machine ? "uv-text uv-reveal" : "text-transparent select-none"}>
-          {content}
+        <span key={a} className={machine ? "uv-hit" : "text-transparent select-none"}>
+          {piece}
         </span>
       ) : (
-        <Fragment key={a}>{content}</Fragment>
+        <Fragment key={a}>{piece}</Fragment>
       ),
     );
   }
   return <>{out}</>;
 }
 
+const CONTACT_ICON: Record<string, typeof Mail01Icon> = {
+  email: Mail01Icon,
+  phone: SmartPhone01Icon,
+  location: Location01Icon,
+  address: Location01Icon,
+  date_of_birth: Calendar03Icon,
+};
+
 /**
- * The resume laid out as a page: header, sections, roles with dates, bullets.
- * The same file text drives both views; only hidden spans change, invisible on
- * the page and violet in the machine view.
+ * The resume laid out as a professional two-column page: header, a sidebar for
+ * contact, skills and education, and a main column for profile and experience.
+ * Personal details come from what /pii found, so they can be shown or withheld
+ * without touching the file text that hidden spans are measured against.
  */
-export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machine: boolean; revealed: boolean }) {
-  const text = revealed ? c.machineText : mask(c.machineText, c.piiFound.map((p) => p.value));
+export function ResumeText({ c, machine }: { c: CandidateReport; machine: boolean }) {
   const hidden: Span[] = [];
   for (const h of c.hidden) {
     const at = locate(c.machineText, h.text);
@@ -75,83 +75,158 @@ export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machi
   }
   if (c.injection.verdict !== "benign") for (const e of c.injection.evidence) hidden.push({ start: e.start, end: e.end });
 
-  const lineHidden = (l: { chars: string[]; from: number }) =>
-    hidden.some((h) => h.start <= l.from && h.end >= l.from + l.chars.length);
-  const isContinuation = (next: { chars: string[]; from: number }, prev: { chars: string[]; from: number }) => {
-    const t = next.chars.join("").trim();
-    return !!t && !isHeading(t) && !isDates(t) && !isBullet(t) && lineHidden(next) === lineHidden(prev);
-  };
-
-  // Split into lines while keeping each line's code-point offset into the file text.
-  const all = Array.from(text);
-  const lines: { chars: string[]; from: number }[] = [];
-  let from = 0;
-  for (let i = 0; i <= all.length; i++) {
+  const all = Array.from(c.machineText);
+  const lines: TextLine[] = [];
+  for (let i = 0, from = 0; i <= all.length; i++) {
     if (i === all.length || all[i] === "\n") {
-      lines.push({ chars: all.slice(from, i), from });
+      const chars = all.slice(from, i);
+      lines.push({ chars, from, text: chars.join("").trim() });
       from = i + 1;
     }
   }
+  const content = lines.filter((l) => l.text);
+  const fullyHidden = (l: TextLine) => hidden.some((h) => h.start <= l.from && h.end >= l.from + l.chars.length);
 
-  const blocks: ReactNode[] = [];
-  let header = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const { chars } = lines[i];
-    const raw = chars.join("").trim();
-    if (!raw) continue;
-    const line = (l = lines[i]) => <Line chars={l.chars} from={l.from} hidden={hidden} machine={machine} />;
-
-    if (header === 0) {
-      blocks.push(<p key={i} className="text-center text-[30px] leading-tight font-semibold tracking-[0.01em] text-ink-900">{line()}</p>);
-      header++;
-    } else if (header === 1) {
-      blocks.push(<p key={i} className="mt-1 text-center text-[17px] text-ink-700 italic">{line()}</p>);
-      header++;
-    } else if (header === 2) {
-      blocks.push(<p key={i} className="mt-2 text-center text-[14px] text-ink-500">{line()}</p>);
-      header++;
-    } else if (isHeading(raw)) {
-      blocks.push(
-        <p key={i} className="mt-7 mb-2 border-b border-ink-900 pb-0.5 text-[16px] font-semibold tracking-[0.08em] text-ink-900 [font-variant-caps:all-small-caps]">
-          {line()}
-        </p>,
-      );
-    } else if (isDates(raw) && lines[i + 1]) {
-      const role = lines[i + 1];
-      blocks.push(
-        <div key={i} className="mt-2 flex items-baseline justify-between gap-4">
-          <p className="text-[16px] font-semibold text-ink-900">{line(role)}</p>
-          <p className="shrink-0 text-[15px] text-ink-500 italic">{line()}</p>
-        </div>,
-      );
-      i++;
-    } else {
-      // A PDF wraps long sentences onto several lines; join plain continuation lines back into one
-      // paragraph, but never merge visible text with a line that is entirely hidden.
-      const bullet = isBullet(raw);
-      const group = [lines[i]];
-      while (lines[i + 1] && isContinuation(lines[i + 1], lines[i])) group.push(lines[++i]);
-      const parts = group.map((l, k) => {
-        const skip = k === 0 && bullet ? l.chars.findIndex((ch) => !/[\s•\-*]/.test(ch)) : 0;
-        return (
-          <Fragment key={k}>
-            {k > 0 && " "}
-            <Line chars={l.chars.slice(skip)} from={l.from + skip} hidden={hidden} machine={machine} />
-          </Fragment>
-        );
-      });
-      blocks.push(
-        bullet ? (
-          <p key={i} className="relative mt-1 pl-5 text-[16px] leading-snug text-ink-700">
-            <span className="absolute left-1.5 text-ink-500">•</span>
-            {parts}
-          </p>
-        ) : (
-          <p key={i} className="mt-1 text-[16px] leading-snug text-ink-700">{parts}</p>
-        ),
-      );
+  // The first lines are the name, the headline and the contact line; personal details render from /pii.
+  const headline = content[1];
+  const sections: { title: string; lines: TextLine[] }[] = [];
+  const hiddenLines: TextLine[] = [];
+  for (const l of content.slice(3)) {
+    if (fullyHidden(l)) hiddenLines.push(l);
+    else if (isHeading(l.text)) sections.push({ title: l.text, lines: [] });
+    else {
+      if (!sections.length) sections.push({ title: "", lines: [] });
+      sections[sections.length - 1].lines.push(l);
     }
   }
 
-  return <div className={resumeFont.className}>{blocks}</div>;
+  const run = (l: TextLine, skip = 0) => <Run line={l} hidden={hidden} machine={machine} skip={skip} />;
+  const title = (t: string) =>
+    t ? <h3 className="mb-2.5 text-[11px] font-black tracking-[0.16em] text-ink-900 uppercase">{t.toLowerCase()}</h3> : null;
+
+  // A PDF wraps long sentences onto several lines: glue plain continuation lines to the line before.
+  const joins = (prev: TextLine, next: TextLine) =>
+    !isHeading(next.text) && !isDates(next.text) && !isBullet(next.text) && fullyHidden(prev) === fullyHidden(next);
+  const flowing = (ls: TextLine[], i: number, skip = 0) => {
+    const parts: ReactNode[] = [<Fragment key={0}>{run(ls[i], skip)}</Fragment>];
+    while (ls[i + 1] && joins(ls[i], ls[i + 1]) && !isDates(ls[i].text)) {
+      i++;
+      parts.push(<Fragment key={i}> {run(ls[i])}</Fragment>);
+    }
+    return { parts, last: i };
+  };
+
+  const body = (ls: TextLine[]) => {
+    const out: ReactNode[] = [];
+    for (let i = 0; i < ls.length; i++) {
+      const l = ls[i];
+      if (isDates(l.text) && ls[i + 1]) {
+        const [role, company] = ls[i + 1].text.split(/,\s*(.+)/);
+        out.push(
+          <div key={i} className="mt-4 first:mt-0">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[14px] font-bold text-ink-900">{company ? role : run(ls[i + 1])}</p>
+              <p className="shrink-0 text-[11.5px] text-ink-400">{run(l)}</p>
+            </div>
+            {company && <p className="mb-1 text-[12.5px] font-bold text-ink-500">{company}</p>}
+          </div>,
+        );
+        i++;
+      } else if (isBullet(l.text)) {
+        const skip = l.chars.findIndex((ch) => !/[\s•\-*]/.test(ch));
+        const { parts, last } = flowing(ls, i, skip);
+        out.push(
+          <p key={i} className="relative mt-1 pl-3.5 text-[12.5px] leading-snug text-ink-700">
+            <span className="absolute top-[0.55em] left-0 size-1 rounded-full bg-ink-400" />
+            {parts}
+          </p>,
+        );
+        i = last;
+      } else {
+        const { parts, last } = flowing(ls, i);
+        out.push(
+          <p key={i} className="mt-1 text-[12.5px] leading-relaxed text-ink-700">
+            {parts}
+          </p>,
+        );
+        i = last;
+      }
+    }
+    return out;
+  };
+
+  const skillsChips = (ls: TextLine[]) =>
+    ls.length === 1 && !hidden.some((h) => h.end > ls[0].from && h.start < ls[0].from + ls[0].chars.length) ? (
+      <div className="flex flex-wrap gap-1.5">
+        {ls[0].text.split(/,\s*/).map((s) => (
+          <span key={s} className="rounded-[4px] bg-white px-2 py-0.5 text-[11.5px] font-bold text-ink-700 ring-1 ring-ink-200">
+            {s}
+          </span>
+        ))}
+      </div>
+    ) : (
+      body(ls)
+    );
+
+  // Every demo applicant is fictional, so the page shows their test details as written.
+  const contacts = c.piiFound.filter((p) => CONTACT_ICON[p.type]);
+  const name = c.name ?? c.label;
+  const initials = c.name ? c.name.split(" ").map((w) => w[0]).join("").slice(0, 2) : null;
+
+  return (
+    <div className={`${resumeFont.className} flex h-full flex-col overflow-hidden`}>
+      <header className="flex items-center gap-5 px-8 pt-9 pb-7 sm:px-10">
+        <div className="grid size-16 shrink-0 place-items-center rounded-full bg-ink-100 text-[20px] font-black text-ink-500">
+          {initials ?? glyph(UserIcon, 26, 1.8)}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[28px] leading-none font-black tracking-[-0.01em] text-ink-900">{name}</p>
+          {headline && <p className="mt-2 text-[13px] font-bold tracking-[0.14em] text-ink-500 uppercase">{run(headline)}</p>}
+        </div>
+      </header>
+
+      <div className="grid flex-1 border-t border-ink-100 sm:grid-cols-[34%_1fr]">
+        <aside className="space-y-7 bg-ink-50 px-8 py-7 sm:px-7">
+          <section>
+            {title("CONTACT")}
+            <ul className="space-y-2">
+              {contacts.map((p, i) => (
+                <li key={i} className="flex items-center gap-2 text-[12px] text-ink-700">
+                  <span className="text-ink-400">{glyph(CONTACT_ICON[p.type], 14, 1.8)}</span>
+                  {p.value}
+                </li>
+              ))}
+            </ul>
+          </section>
+          {sections
+            .filter((s) => SIDEBAR.test(s.title))
+            .map((s) => (
+              <section key={s.title}>
+                {title(s.title)}
+                {s.title === "SKILLS" ? skillsChips(s.lines) : body(s.lines)}
+              </section>
+            ))}
+        </aside>
+
+        <div className="space-y-7 px-8 py-7 sm:px-9">
+          {sections
+            .filter((s) => !SIDEBAR.test(s.title))
+            .map((s, i) => (
+              <section key={`${s.title}${i}`}>
+                {title(s.title === "SUMMARY" ? "PROFILE" : s.title)}
+                {body(s.lines)}
+              </section>
+            ))}
+          {hiddenLines.length > 0 && (
+            // Where the hidden lines sit on the page: blank to a reader, legible to a text extractor.
+            <section className="text-[12.5px] leading-relaxed text-ink-700">
+              {hiddenLines.map((l, i) => (
+                <p key={i}>{run(l)}</p>
+              ))}
+            </section>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
