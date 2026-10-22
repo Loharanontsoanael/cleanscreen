@@ -1,0 +1,1 @@
+I have spent the last seven years building data pipelines, most recently as lead data engineer at Harbourline Logistics since 2021, where I moved our order events onto Kafka. Before that I spent four years at Brightmart Retail building Spark feature pipelines. I would love to bring that experience to Northwind's forecasting product.

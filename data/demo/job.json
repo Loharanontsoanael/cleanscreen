@@ -1,0 +1,33 @@
+{
+  "id": "northwind-senior-data-engineer",
+  "title": "Senior Data Engineer",
+  "company": "Northwind Analytics (fictional)",
+  "description": "Northwind Analytics is hiring a Senior Data Engineer to own the batch and streaming pipelines behind our retail forecasting product. You will design, build and operate production data pipelines, keep data quality high, and mentor two junior engineers.",
+  "requirements": [
+    {
+      "id": "experience",
+      "text": "At least 5 years of professional data engineering experience",
+      "mustHave": true
+    },
+    {
+      "id": "python_sql",
+      "text": "Production experience with Python and SQL",
+      "mustHave": true
+    },
+    {
+      "id": "pipelines",
+      "text": "Built and operated data pipelines with Airflow, Spark or Kafka",
+      "mustHave": true
+    },
+    {
+      "id": "cloud",
+      "text": "Experience with a cloud data platform such as AWS or GCP",
+      "mustHave": false
+    },
+    {
+      "id": "mentoring",
+      "text": "Has led or mentored other engineers",
+      "mustHave": false
+    }
+  ]
+}

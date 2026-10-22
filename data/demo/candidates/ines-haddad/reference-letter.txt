@@ -1,0 +1,1 @@
+Ines Haddad joined Calanques Energy as a data engineer in 2022. She built our Spark sensor-cleaning jobs and runs our Airflow DAGs, and she mentored our apprentice data engineer this year. — CTO, Calanques Energy

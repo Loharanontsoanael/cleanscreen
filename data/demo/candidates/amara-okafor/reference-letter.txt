@@ -1,0 +1,1 @@
+To whom it may concern. Amara Okafor joined Harbourline Logistics in March 2021 and is our Lead Data Engineer. She owns our Airflow platform, which runs more than forty DAGs into BigQuery, and she led the migration of our order events from nightly cron jobs to Kafka. She mentors three engineers on the data team. — Head of Data, Harbourline Logistics

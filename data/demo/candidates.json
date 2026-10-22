@@ -1,0 +1,95 @@
+[
+  {
+    "id": "amara-okafor",
+    "resume": "resume.pdf",
+    "coverLetter": "cover-letter.txt",
+    "evidence": [
+      {
+        "id": "reference-letter",
+        "title": "Reference letter from Harbourline Logistics",
+        "file": "reference-letter.txt"
+      }
+    ],
+    "code": "features.py"
+  },
+  {
+    "id": "lucas-bernard",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "priya-raman",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "tomasz-kowalski",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "hannah-weiss",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [
+      {
+        "id": "reference-letter",
+        "title": "Reference letter from Spree Mobility",
+        "file": "reference-letter.txt"
+      },
+      {
+        "id": "certification-check",
+        "title": "Certification lookup result",
+        "file": "certification-check.txt"
+      }
+    ],
+    "code": null
+  },
+  {
+    "id": "kevin-mendes",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "jordan-blake",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "sofia-marin",
+    "resume": "resume.pdf",
+    "coverLetter": "cover-letter.txt",
+    "evidence": [],
+    "code": null
+  },
+  {
+    "id": "daniel-cho",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [],
+    "code": "features.py"
+  },
+  {
+    "id": "ines-haddad",
+    "resume": "resume.pdf",
+    "coverLetter": null,
+    "evidence": [
+      {
+        "id": "reference-letter",
+        "title": "Reference letter from Calanques Energy",
+        "file": "reference-letter.txt"
+      }
+    ],
+    "code": null
+  }
+]
