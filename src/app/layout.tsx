@@ -23,10 +23,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <header className="mx-auto flex h-[68px] max-w-[1160px] items-center gap-3 px-5 sm:gap-7 sm:px-7">
           <Logo />
           <span className="flex-1" />
-          <Link href="/how-it-works" className="hidden text-[15px] font-medium text-ink-500 hover:text-brand-900 md:block">
+          <Link href="/#how-it-works" className="hidden text-[15px] font-medium text-ink-500 hover:text-brand-900 md:block">
             How it works
           </Link>
-          <Link href="/" className="hidden text-[15px] font-medium text-ink-500 hover:text-brand-900 sm:block">
+          <Link href="/#demo" className="hidden text-[15px] font-medium text-ink-500 hover:text-brand-900 sm:block">
             Demo round
           </Link>
           <Link href="/run" className="btn btn-primary btn-sm">

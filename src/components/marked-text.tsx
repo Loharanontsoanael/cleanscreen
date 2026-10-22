@@ -42,17 +42,3 @@ export function MarkedText({ text, marks, render }: { text: string; marks: Mark[
   if (pos < chars.length) out.push(<Fragment key={`p${pos}`}>{plain(chars.slice(pos).join(""))}</Fragment>);
   return <>{out}</>;
 }
-
-/** Shows anonymisation placeholders such as <PERSON> as redaction bars. */
-export function renderRedactions(s: string): ReactNode {
-  const parts = s.split(/(<[A-Z_]+>)/g);
-  return parts.map((p, i) =>
-    /^<[A-Z_]+>$/.test(p) ? (
-      <span key={i} className="redaction" title="Removed before scoring">
-        {p.slice(1, -1).toLowerCase().replace(/_/g, " ")}
-      </span>
-    ) : (
-      <Fragment key={i}>{p}</Fragment>
-    ),
-  );
-}

@@ -8,6 +8,7 @@ import { CandidateDetail } from "./candidate-detail";
 import { glyph } from "./glyph";
 import { OUTCOME_ORDER, OutcomeBadge } from "./outcome";
 import { HiringDesk } from "./hiring-desk";
+import { FinalCta, HowItWorks, WhyNow } from "./landing-sections";
 
 /** Raw-file score minus visible-resume score above which the gap is called out. */
 const INFLATION_GAP = 15;
@@ -62,8 +63,8 @@ export function RoundView({ report }: { report: RoundReport }) {
           Resume screening you can’t trick.
         </h1>
         <p className="mx-auto mt-6 max-w-[46ch] text-lg leading-relaxed text-white/85">
-          CleanScreen scores the resume a person actually sees, with identity removed. It finds hidden text, checks
-          claims against references and tells you why each application needs a closer look.
+          For hiring teams who use AI to screen. CleanScreen scores the resume a person actually sees, with identity
+          removed, and explains every decision.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3.5">
           {showSpotlight && (
@@ -71,11 +72,13 @@ export function RoundView({ report }: { report: RoundReport }) {
               See what an applicant hid
             </button>
           )}
-          <Link href="/run" className="btn border-white/60 text-white hover:bg-white/10">
+        </div>
+        <p className="mt-5 text-[13.5px] text-white/75">
+          Free to try, no sign-up. Every applicant in the demo is fictional.{" "}
+          <Link href="/run" className="font-semibold text-white underline underline-offset-2">
             Screen your own resumes
           </Link>
-        </div>
-        <p className="mt-5 text-[13.5px] text-white/70">Free to try. Every applicant in the demo is fictional.</p>
+        </p>
 
         <div className="relative mt-10">
           {/* The white page rises in an arc under the illustration. */}
@@ -86,8 +89,10 @@ export function RoundView({ report }: { report: RoundReport }) {
         </div>
       </section>
 
+      <WhyNow />
+
       {showSpotlight && (
-        <section className="mx-auto mt-16 max-w-[1160px] px-5 sm:px-7">
+        <section className="mx-auto mt-6 max-w-[1160px] px-5 sm:px-7">
           <div className="panel flex flex-col gap-8 p-7 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-end gap-8 sm:gap-12">
               <div>
@@ -115,7 +120,9 @@ export function RoundView({ report }: { report: RoundReport }) {
       )}
 
 
-      <section className="mx-auto mt-20 max-w-[1160px] px-5 sm:px-7">
+      <HowItWorks />
+
+      <section id="demo" className="mx-auto mt-24 max-w-[1160px] scroll-mt-24 px-5 sm:px-7">
         <p className="eyebrow">Demo round</p>
         <h2 className="title mt-2 text-[2rem] leading-tight sm:text-[2.4rem]">
           {report.job.title}
@@ -175,6 +182,7 @@ export function RoundView({ report }: { report: RoundReport }) {
           </table>
         </div>
       </section>
+      <FinalCta />
     </main>
   );
 }

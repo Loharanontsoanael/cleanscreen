@@ -128,6 +128,7 @@ function Integrity({ c, duplicates }: { c: CandidateReport; duplicates: Duplicat
 }
 
 function Requirements({ c }: { c: CandidateReport }) {
+  const [showEvidence, setShowEvidence] = useState(false);
   return (
     <Section title="Requirements" aside={`Fit ${c.score}/100`}>
       <ul className="divide-y divide-rule-soft">
@@ -148,7 +149,7 @@ function Requirements({ c }: { c: CandidateReport }) {
               {inflated && (
                 <p className="mt-1 text-xs text-brand-600">Reading the raw file instead would have marked this as met.</p>
               )}
-              {r.evidence.length > 0 && (
+              {showEvidence && r.evidence.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {r.evidence.map((e, i) => (
                     <li key={i} className="text-sm text-ink-500">
@@ -161,19 +162,17 @@ function Requirements({ c }: { c: CandidateReport }) {
           );
         })}
       </ul>
+      <button onClick={() => setShowEvidence(!showEvidence)} className="mt-3 text-sm font-medium text-ink-500 underline-offset-2 hover:underline">
+        {showEvidence ? "Hide" : "Show"} the passages behind each verdict
+      </button>
     </Section>
   );
 }
 
 function Claims({ c }: { c: CandidateReport }) {
   const [open, setOpen] = useState(false);
-  if (!c.claims) {
-    return (
-      <Section title="Claims checked against references">
-        <p className="text-sm text-ink-500">No references or credential records came with this application, so no claim was checked.</p>
-      </Section>
-    );
-  }
+  // Without references or credential records there is nothing to check, so the panel is left out.
+  if (!c.claims) return null;
   const supported = c.claims.filter((x) => x.verdict === "supported");
   const contradicted = c.claims.filter((x) => x.verdict === "contradicted");
   const unstated = c.claims.filter((x) => x.verdict === "not_stated");
@@ -222,10 +221,8 @@ function Code({ c }: { c: CandidateReport }) {
 
 function Scorecard({ c }: { c: CandidateReport }) {
   return (
-    <Section title="Scorecard for the hiring manager" aside={`Seniority: ${c.scorecard.seniority}`}>
-      <p className="text-ink-700">{c.scorecard.summary}</p>
-      <h4 className="mt-4 mb-1 text-sm font-semibold">Questions for the interview</h4>
-      <p className="text-sm whitespace-pre-line">{c.scorecard.interviewQuestions}</p>
+    <Section title="Questions for the interview" aside={`Seniority: ${c.scorecard.seniority}`}>
+      <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink-700">{c.scorecard.interviewQuestions}</p>
     </Section>
   );
 }
@@ -234,8 +231,12 @@ function Trail({ c }: { c: CandidateReport }) {
   const credits = c.trail.reduce((s, t) => s + (t.credits ?? 0), 0);
   const ms = c.trail.reduce((s, t) => s + (t.modelMs ?? 0), 0);
   return (
-    <Section title="Audit trail" aside={`${c.trail.length} Clocked calls, ${credits} credits, ${(ms / 1000).toFixed(1)} s of model time`}>
-      <div className="overflow-x-auto">
+    <Section title="Audit trail" aside={`${c.trail.length} Clocked calls, ${credits} credits`}>
+      <details className="group">
+        <summary className="cursor-pointer text-sm font-medium text-ink-500 hover:text-brand-900">
+          Show every call, why it was made and what it cost ({(ms / 1000).toFixed(1)} s of model time)
+        </summary>
+      <div className="mt-3 overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="text-ink-500">
             <tr>
@@ -257,6 +258,7 @@ function Trail({ c }: { c: CandidateReport }) {
           </tbody>
         </table>
       </div>
+      </details>
     </Section>
   );
 }
@@ -287,18 +289,11 @@ export function CandidateDetail({
           {revealed ? "Hide identity" : "Reveal identity"}
         </button>
       </div>
-      {c.decision.reasons.length > 0 && (
-        <ul className="mb-6 space-y-1 text-sm">
-          {c.decision.reasons.map((r, i) => (
-            <li key={i} className="text-ink-500">
-              <span className="text-alerte">●</span> {r}
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Integrity findings have their own panel; only show the summary line here. */}
+      <p className="mb-6 max-w-[70ch] text-[15px] text-ink-500">{c.scorecard.summary}</p>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <ResumePaper key={c.id} candidate={c} initialView={c.hidden.length ? "machine" : "blind"} />
+          <ResumePaper key={c.id} candidate={c} revealed={revealed} />
         </div>
         <div className="space-y-5">
           <Integrity c={c} duplicates={mine} />
