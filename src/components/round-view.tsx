@@ -7,7 +7,6 @@ import type { RoundReport } from "@/lib/types";
 import { CandidateDetail } from "./candidate-detail";
 import { glyph } from "./glyph";
 import { OUTCOME_ORDER, OutcomeBadge } from "./outcome";
-import { TwoReadings } from "./two-readings";
 import { HiringDesk } from "./hiring-desk";
 
 /** Raw-file score minus visible-resume score above which the gap is called out. */
@@ -89,19 +88,28 @@ export function RoundView({ report }: { report: RoundReport }) {
 
       {showSpotlight && (
         <section className="mx-auto mt-16 max-w-[1160px] px-5 sm:px-7">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="eyebrow">Same file, read two ways</p>
-              <h2 className="title mt-2 max-w-[28ch] text-[2rem] leading-tight sm:text-[2.6rem]">
-                {spotlight.naiveScore} for an AI. {spotlight.score} for what you can see.
-              </h2>
+          <div className="panel flex flex-col gap-8 p-7 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-end gap-8 sm:gap-12">
+              <div>
+                <p className="figure text-[4rem] sm:text-[5rem]" style={{ color: "var(--color-brand-600)" }}>
+                  {spotlight.naiveScore}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-ink-500">an AI reading the file</p>
+              </div>
+              <div>
+                <p className="figure text-[4rem] sm:text-[5rem]">{spotlight.score}</p>
+                <p className="mt-2 text-sm font-semibold text-ink-500">what you can see</p>
+              </div>
             </div>
-            <button onClick={() => open(spotlight.label)} className="btn btn-secondary">
-              Open the application {glyph(ArrowRight01Icon, 18, 2)}
-            </button>
-          </div>
-          <div className="mt-8">
-            <TwoReadings c={spotlight} />
+            <div className="max-w-[40ch]">
+              <p className="text-[17px] leading-relaxed text-ink-700">
+                Same resume, same file. {spotlight.label} printed a senior career in white ink. CleanScreen only scores
+                the page a person can see.
+              </p>
+              <button onClick={() => open(spotlight.label)} className="btn btn-primary mt-5">
+                See what was hidden {glyph(ArrowRight01Icon, 18, 2)}
+              </button>
+            </div>
           </div>
         </section>
       )}
