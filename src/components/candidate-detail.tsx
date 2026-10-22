@@ -119,7 +119,7 @@ export function CandidateDetail({
             {machine ? "Show what a person sees" : "Show what an AI reads"}
           </button>
         </div>
-        <div className="panel mt-3 px-7 py-6">
+        <div className="mt-3 rounded-[6px] bg-white px-8 py-9 shadow-[0_1px_2px_rgb(15_27_45/0.08),0_12px_32px_-12px_rgb(15_27_45/0.28)] ring-1 ring-ink-100 sm:px-12 sm:py-12">
           <ResumeText c={c} machine={machine} revealed={revealed} />
         </div>
         <p className="mt-2 text-[13px] text-ink-400">Name and contact details were removed before scoring.</p>
