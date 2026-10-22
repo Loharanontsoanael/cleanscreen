@@ -2,6 +2,7 @@
 
 import { Fragment, type ReactNode } from "react";
 import type { CandidateReport } from "@/lib/types";
+import { resumeFont } from "@/lib/resume-font";
 import { locate } from "./marked-text";
 
 const MASK = "█";
@@ -74,6 +75,13 @@ export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machi
   }
   if (c.injection.verdict !== "benign") for (const e of c.injection.evidence) hidden.push({ start: e.start, end: e.end });
 
+  const lineHidden = (l: { chars: string[]; from: number }) =>
+    hidden.some((h) => h.start <= l.from && h.end >= l.from + l.chars.length);
+  const isContinuation = (next: { chars: string[]; from: number }, prev: { chars: string[]; from: number }) => {
+    const t = next.chars.join("").trim();
+    return !!t && !isHeading(t) && !isDates(t) && !isBullet(t) && lineHidden(next) === lineHidden(prev);
+  };
+
   // Split into lines while keeping each line's code-point offset into the file text.
   const all = Array.from(text);
   const lines: { chars: string[]; from: number }[] = [];
@@ -88,23 +96,23 @@ export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machi
   const blocks: ReactNode[] = [];
   let header = 0;
   for (let i = 0; i < lines.length; i++) {
-    const { chars, from: start } = lines[i];
+    const { chars } = lines[i];
     const raw = chars.join("").trim();
     if (!raw) continue;
     const line = (l = lines[i]) => <Line chars={l.chars} from={l.from} hidden={hidden} machine={machine} />;
 
     if (header === 0) {
-      blocks.push(<p key={i} className="text-[24px] leading-tight font-bold tracking-tight text-ink-900">{line()}</p>);
+      blocks.push(<p key={i} className="text-center text-[30px] leading-tight font-semibold tracking-[0.01em] text-ink-900">{line()}</p>);
       header++;
     } else if (header === 1) {
-      blocks.push(<p key={i} className="mt-0.5 text-[15px] font-semibold text-ink-500">{line()}</p>);
+      blocks.push(<p key={i} className="mt-1 text-center text-[17px] text-ink-700 italic">{line()}</p>);
       header++;
     } else if (header === 2) {
-      blocks.push(<p key={i} className="mt-1.5 text-[12px] text-ink-400">{line()}</p>);
+      blocks.push(<p key={i} className="mt-2 text-center text-[14px] text-ink-500">{line()}</p>);
       header++;
     } else if (isHeading(raw)) {
       blocks.push(
-        <p key={i} className="mt-6 mb-2 border-b border-ink-200 pb-1 text-[11px] font-bold tracking-[0.12em] text-ink-900 uppercase">
+        <p key={i} className="mt-7 mb-2 border-b border-ink-900 pb-0.5 text-[16px] font-semibold tracking-[0.08em] text-ink-900 [font-variant-caps:all-small-caps]">
           {line()}
         </p>,
       );
@@ -112,23 +120,38 @@ export function ResumeText({ c, machine, revealed }: { c: CandidateReport; machi
       const role = lines[i + 1];
       blocks.push(
         <div key={i} className="mt-2 flex items-baseline justify-between gap-4">
-          <p className="text-[14px] font-bold text-ink-900">{line(role)}</p>
-          <p className="shrink-0 text-[12px] text-ink-400">{line()}</p>
+          <p className="text-[16px] font-semibold text-ink-900">{line(role)}</p>
+          <p className="shrink-0 text-[15px] text-ink-500 italic">{line()}</p>
         </div>,
       );
       i++;
-    } else if (isBullet(raw)) {
-      const offset = chars.findIndex((ch) => !/[\s•\-*]/.test(ch));
-      blocks.push(
-        <p key={i} className="relative mt-1 pl-4 text-[13.5px] leading-snug text-ink-700">
-          <span className="absolute left-1 text-ink-400">•</span>
-          <Line chars={chars.slice(offset)} from={start + offset} hidden={hidden} machine={machine} />
-        </p>,
-      );
     } else {
-      blocks.push(<p key={i} className="mt-1 text-[13.5px] leading-snug text-ink-700">{line()}</p>);
+      // A PDF wraps long sentences onto several lines; join plain continuation lines back into one
+      // paragraph, but never merge visible text with a line that is entirely hidden.
+      const bullet = isBullet(raw);
+      const group = [lines[i]];
+      while (lines[i + 1] && isContinuation(lines[i + 1], lines[i])) group.push(lines[++i]);
+      const parts = group.map((l, k) => {
+        const skip = k === 0 && bullet ? l.chars.findIndex((ch) => !/[\s•\-*]/.test(ch)) : 0;
+        return (
+          <Fragment key={k}>
+            {k > 0 && " "}
+            <Line chars={l.chars.slice(skip)} from={l.from + skip} hidden={hidden} machine={machine} />
+          </Fragment>
+        );
+      });
+      blocks.push(
+        bullet ? (
+          <p key={i} className="relative mt-1 pl-5 text-[16px] leading-snug text-ink-700">
+            <span className="absolute left-1.5 text-ink-500">•</span>
+            {parts}
+          </p>
+        ) : (
+          <p key={i} className="mt-1 text-[16px] leading-snug text-ink-700">{parts}</p>
+        ),
+      );
     }
   }
 
-  return <div className="font-[Helvetica,Arial,sans-serif]">{blocks}</div>;
+  return <div className={resumeFont.className}>{blocks}</div>;
 }
