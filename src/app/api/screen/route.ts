@@ -1,4 +1,5 @@
 import { analyseRound, type ProgressEvent } from "@/lib/analysis";
+import { ClockedUnavailable } from "@/lib/clocked";
 import type { CandidateInput, JobInput, Requirement } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
     if (file.size > MAX_BYTES) return fail(413, `${file.name} is larger than 3 MB.`);
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") return fail(400, `${file.name} is not a PDF.`);
-    candidates.push({ id: `upload-${i + 1}`, resumePdf: bytes, evidence: [] });
+    candidates.push({ id: `upload-${i + 1}`, fileName: file.name, resumePdf: bytes, evidence: [] });
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
@@ -67,16 +68,26 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (event: ProgressEvent | { type: "report"; report: unknown } | { type: "error"; error: string }) =>
-        controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+      const send = (event: ProgressEvent | { type: "report"; report: unknown } | { type: "error"; error: string }) => {
+        if (!request.signal.aborted) controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+      };
       try {
-        const report = await analyseRound(job, candidates, send);
+        // request.signal fires when the visitor leaves: pending Clocked calls are cancelled, not paid for.
+        const report = await analyseRound(job, candidates, send, request.signal);
         send({ type: "report", report });
       } catch (err) {
-        console.error("screening failed", err);
-        send({ type: "error", error: "Screening stopped before it finished. Please try again." });
+        if (request.signal.aborted) return;
+        if (!(err instanceof ClockedUnavailable)) console.error("screening failed", err);
+        send({
+          type: "error",
+          error: err instanceof ClockedUnavailable ? err.message : "Screening stopped before it finished. Please try again.",
+        });
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          // Already closed because the visitor left.
+        }
       }
     },
   });

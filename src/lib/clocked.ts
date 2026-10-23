@@ -2,7 +2,16 @@ import "server-only";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { Clocked, ConflictError } from "clocked-sdk";
+import {
+  AuthenticationError,
+  Clocked,
+  ClockedError,
+  ConnectionError,
+  InsufficientCreditsError,
+  PermissionDeniedError,
+  RateLimitError,
+  ValidationError,
+} from "clocked-sdk";
 import type {
   CompareRequest,
   CompareResponse,
@@ -46,22 +55,72 @@ export interface CallRecord {
   credits: number | null;
   costUsd: number | null;
   cached: boolean;
+  /** Set when the call failed; the analysis carried on without it where it could. */
+  error?: string;
 }
 
-const CONCURRENCY = Number(process.env.CLOCKED_CONCURRENCY ?? 4);
+export interface CallOptions {
+  /** Cancels the call, including any wait between retries (e.g. when the visitor leaves). */
+  signal?: AbortSignal;
+}
+
+interface Result<T> {
+  data: T;
+  modelMs: number | null;
+  credits: number | null;
+  costUsd: number | null;
+}
+type Method<E extends EndpointName> = (
+  body: EndpointMap[E][0],
+  options?: { signal?: AbortSignal; timeout?: number },
+) => Promise<Result<EndpointMap[E][1]>>;
+type Client = { [E in EndpointName]: Method<E> };
+
+const CONCURRENCY = Math.max(1, Number(process.env.CLOCKED_CONCURRENCY ?? 4));
+/** Per attempt. The gateway gives the model up to 110 s; our requests are small, so fail sooner. */
+const TIMEOUT_MS = 60_000;
+/** Fresh attempts after the service says an attempt has ended (409/5xx with retryAsNew). */
+const NEW_ATTEMPTS = 2;
 // Development cache: identical requests are answered from disk so iterating on the UI spends no credits.
 const CACHE_DIR = process.env.CLOCKED_CACHE_DIR ?? (process.env.NODE_ENV === "production" ? "" : ".cache/clocked");
 
-let client: Clocked | null = null;
-function getClient(): Clocked {
-  if (!process.env.CLOCKED_API_KEY) {
-    throw new Error("CLOCKED_API_KEY is not set. Copy .env.example to .env.local and add your key.");
+let client: Client | null = null;
+function getClient(): Client {
+  if (!client) {
+    if (!process.env.CLOCKED_API_KEY) {
+      throw new ClockedUnavailable("CLOCKED_API_KEY is not set. Copy .env.example to .env.local and add your key.");
+    }
+    client = new Clocked({ timeout: TIMEOUT_MS }) as unknown as Client;
   }
-  client ??= new Clocked();
   return client;
 }
 
-// A small FIFO semaphore that keeps us inside the account's concurrency allowance.
+/** Lets tests run the analysis against a fake client. */
+export function setClockedClientForTests(fake: Partial<Client> | null) {
+  client = fake as Client | null;
+}
+
+/**
+ * An account-level problem (no key, rejected key, no credits, plan inactive). Retrying or moving
+ * on to the next applicant cannot help, so the whole screening stops with a clear message.
+ */
+export class ClockedUnavailable extends Error {}
+
+/** A short, user-facing reason for a failed call. */
+export function describeClockedError(err: unknown): string {
+  if (err instanceof ClockedUnavailable) return err.message;
+  if (err instanceof InsufficientCreditsError) return "The Clocked account is out of credits.";
+  if (err instanceof AuthenticationError || err instanceof PermissionDeniedError) return "The Clocked key was rejected.";
+  if (err instanceof RateLimitError) return "Clocked is busy right now.";
+  if (err instanceof ValidationError) return `Clocked could not accept the request (${err.error ?? err.status}).`;
+  if (err instanceof ConnectionError) return "Clocked did not answer in time.";
+  if (err instanceof ClockedError) return `Clocked returned an error (${err.status ?? "no status"}).`;
+  if (err instanceof Error && err.name === "AbortError") return "Cancelled.";
+  return "Unexpected error while calling Clocked.";
+}
+
+// A FIFO semaphore that keeps us inside the account's concurrency allowance (a bounded queue,
+// as the limits guide asks, rather than an unbounded fan-out).
 let active = 0;
 const waiting: (() => void)[] = [];
 async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
@@ -91,40 +150,52 @@ async function writeCache(key: string, value: unknown): Promise<void> {
 }
 
 /**
- * Calls one Clocked endpoint and appends the call to `trail`.
- * Errors propagate: the analysis decides whether a failed step is fatal.
+ * Calls one Clocked endpoint and appends the call, successful or not, to `trail`.
+ *
+ * Retries follow the Clocked guidance: the SDK already retries 429, 5xx and network failures under
+ * one idempotency key, so the work is billed once. When the service says an attempt has ended
+ * (`retryAsNew`), starting again is new work; we choose to do that at most twice. Account-level
+ * failures surface as {@link ClockedUnavailable}; anything else is rethrown for the caller to
+ * decide whether the step is essential.
  */
 export async function callClocked<E extends EndpointName>(
   endpoint: E,
   body: EndpointMap[E][0],
   purpose: string,
   trail: CallRecord[],
+  options: CallOptions = {},
 ): Promise<EndpointMap[E][1]> {
   const key = createHash("sha256").update(endpoint).update(JSON.stringify(body)).digest("hex");
-  const cached = await readCache<{ data: EndpointMap[E][1]; modelMs: number | null; credits: number | null; costUsd: number | null }>(key);
+  const cached = await readCache<Result<EndpointMap[E][1]>>(key);
   if (cached) {
     trail.push({ endpoint, purpose, modelMs: cached.modelMs, credits: cached.credits, costUsd: cached.costUsd, cached: true });
     return cached.data;
   }
-  const res = await withSlot(async () => {
-    const c = getClient() as unknown as Record<E, (b: EndpointMap[E][0]) => Promise<{
-      data: EndpointMap[E][1];
-      modelMs: number | null;
-      credits: number | null;
-      costUsd: number | null;
-    }>>;
-    // The SDK retries an attempt under one idempotency key. When the service says that attempt
-    // has ended (409 + retryAsNew), start a fresh attempt, a bounded number of times.
-    for (let attempt = 1; ; attempt++) {
-      try {
-        return await c[endpoint].call(c, body);
-      } catch (err) {
-        if (!(err instanceof ConflictError && err.retryAsNew) || attempt >= 3) throw err;
-        await new Promise((r) => setTimeout(r, 500 * attempt));
+
+  options.signal?.throwIfAborted();
+  try {
+    const res = await withSlot(async () => {
+      options.signal?.throwIfAborted();
+      const c = getClient();
+      const method = c[endpoint] as Method<E>;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          return await method.call(c, body, { signal: options.signal });
+        } catch (err) {
+          if (!(err instanceof ClockedError && err.retryAsNew) || attempt >= NEW_ATTEMPTS) throw err;
+          await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
+        }
       }
+    });
+    trail.push({ endpoint, purpose, modelMs: res.modelMs, credits: res.credits, costUsd: res.costUsd, cached: false });
+    await writeCache(key, { data: res.data, modelMs: res.modelMs, credits: res.credits, costUsd: res.costUsd });
+    return res.data;
+  } catch (err) {
+    trail.push({ endpoint, purpose, modelMs: null, credits: null, costUsd: null, cached: false, error: describeClockedError(err) });
+    if (err instanceof ValidationError) console.error(`Clocked rejected a ${endpoint} request:`, err.error);
+    if (err instanceof InsufficientCreditsError || err instanceof AuthenticationError || err instanceof PermissionDeniedError) {
+      throw new ClockedUnavailable(`Screening is unavailable: ${describeClockedError(err).toLowerCase()}`);
     }
-  });
-  trail.push({ endpoint, purpose, modelMs: res.modelMs, credits: res.credits, costUsd: res.costUsd, cached: false });
-  await writeCache(key, { data: res.data, modelMs: res.modelMs, credits: res.credits, costUsd: res.costUsd });
-  return res.data;
+    throw err;
+  }
 }

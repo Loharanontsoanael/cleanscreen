@@ -83,6 +83,7 @@ export function ScreenOwn() {
           const event = JSON.parse(line);
           if (event.type === "step") setProgress((p) => [...p.filter((x) => x.candidate !== event.candidate), { candidate: event.candidate, step: event.step }]);
           if (event.type === "candidate") setProgress((p) => p.map((x) => (x.candidate === event.candidate ? { ...x, step: "Done" } : x)));
+          if (event.type === "failed") setProgress((p) => [...p.filter((x) => x.candidate !== event.candidate), { candidate: event.candidate, step: event.error }]);
           if (event.type === "round") setProgress((p) => [...p, { candidate: "All applicants", step: event.step }]);
           if (event.type === "report") setReport(event.report as RoundReport);
           if (event.type === "error") setError(event.error);

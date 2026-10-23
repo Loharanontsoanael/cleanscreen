@@ -121,6 +121,21 @@ export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (la
       </ul>
       <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
       </div>
+      {report.failed?.length > 0 && (
+        <div className="mt-4 rounded-[16px] bg-rail px-4 py-3 text-sm text-ink-500">
+          <p className="font-semibold text-brand-900">
+            {report.failed.length} file{report.failed.length > 1 ? "s" : ""} could not be screened
+          </p>
+          <ul className="mt-1 space-y-0.5">
+            {report.failed.map((f) => (
+              <li key={f.file}>
+                <span className="font-medium text-ink-700">{f.file}</span>: {f.error}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {report.warnings?.length > 0 && <p className="mt-3 text-[13px] text-ink-400">Not checked: {report.warnings.join("; ")}.</p>}
       <p className="mt-2 text-[13px] text-ink-400">
         {report.candidates.length} applicant{report.candidates.length > 1 ? "s" : ""} screened with {credits.toLocaleString()} Clocked credits.
       </p>

@@ -32,7 +32,7 @@
       }
     ]
   },
-  "generatedAt": "2026-10-23T08:11:50.949Z",
+  "generatedAt": "2026-10-23T08:21:22.993Z",
   "candidates": [
     {
       "id": "amara-okafor",
@@ -428,21 +428,22 @@
         "outcome": "advance",
         "reasons": []
       },
+      "warnings": [],
       "trail": [
-        {
-          "endpoint": "injection",
-          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-          "modelMs": 26.772192,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
         {
           "endpoint": "pii",
           "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
           "modelMs": 188.357025,
           "credits": 8,
           "costUsd": 0.001594,
+          "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+          "modelMs": 26.772192,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -470,25 +471,9 @@
           "cached": true
         },
         {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 240.754303,
-          "credits": 10,
-          "costUsd": 0.001992,
-          "cached": true
-        },
-        {
           "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
           "modelMs": 76.915009,
-          "credits": 4,
-          "costUsd": 0.000797,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 76.788254,
           "credits": 4,
           "costUsd": 0.000797,
           "cached": true
@@ -503,6 +488,14 @@
         },
         {
           "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 77.563362,
+          "credits": 4,
+          "costUsd": 0.000797,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
           "modelMs": 77.836067,
           "credits": 4,
@@ -511,18 +504,18 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 77.563362,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 76.788254,
           "credits": 4,
           "costUsd": 0.000797,
           "cached": true
         },
         {
-          "endpoint": "grounding",
-          "purpose": "Verify resume claims against references and credential records",
-          "modelMs": 268.440796,
-          "credits": 11,
-          "costUsd": 0.002191,
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 240.754303,
+          "credits": 10,
+          "costUsd": 0.001992,
           "cached": true
         },
         {
@@ -531,6 +524,14 @@
           "modelMs": 143.943684,
           "credits": 6,
           "costUsd": 0.001195,
+          "cached": true
+        },
+        {
+          "endpoint": "grounding",
+          "purpose": "Verify resume claims against references and credential records",
+          "modelMs": 268.440796,
+          "credits": 11,
+          "costUsd": 0.002191,
           "cached": true
         },
         {
@@ -784,13 +785,13 @@
       "scorecard": {
         "recommendation": "human_review",
         "recommendationProbabilities": {
-          "advance": 0.004882077119535473,
-          "human_review": 0.984028795962283,
-          "reject": 0.011089126918181542
+          "advance": 0.0064474314722078796,
+          "human_review": 0.9760175651119767,
+          "reject": 0.017535003415815438
         },
         "seniority": "Junior",
         "summary": "The applicant does not meet the must-have requirement of 5 years of professional data engineering experience and lacks evidence of production experience with Python or data pipeline orchestration. Additionally, an integrity finding was identified due to the presence of hidden text used for keyword stuffing",
-        "interviewQuestions": "1. Can you describe a complex data pipeline you have built and operated using tools like Airflow, Spark, or Kafka, including how you handled data orchestration and scaling?\n2. Could you provide a specific example of how you have used Python in a production environment to automate data workflows or perform advanced data transformations?\n3. Given your experience with SQL and Power BI, how would you approach designing and implementing a scalable data architecture on a cloud platform like AWS or GCP?"
+        "interviewQuestions": "1. Can you describe a complex data pipeline you have built and operated using tools like Airflow, Spark, or Kafka, specifically detailing how you managed data orchestration and scaling?\n2. Could you provide a specific example of how you have used Python in a production environment to automate data workflows or perform complex data transformations?\n3. Given your experience with SQL and Power BI, how would you approach designing and implementing a scalable data architecture on a cloud platform like AWS or GCP to support enterprise-level analytics?"
       },
       "decision": {
         "outcome": "flagged",
@@ -798,6 +799,7 @@
           "Hidden invisible text: keyword stuffing"
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "injection",
@@ -821,14 +823,6 @@
           "modelMs": 20.736576,
           "credits": 1,
           "costUsd": 0.000199,
-          "cached": false
-        },
-        {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 226.37738,
-          "credits": 10,
-          "costUsd": 0.001992,
           "cached": true
         },
         {
@@ -837,6 +831,22 @@
           "modelMs": 58.784672,
           "credits": 3,
           "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 49.383202,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 226.37738,
+          "credits": 10,
+          "costUsd": 0.001992,
           "cached": true
         },
         {
@@ -857,24 +867,16 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-          "modelMs": 42.013729,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 49.383202,
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 42.438656,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 42.438656,
+          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+          "modelMs": 42.013729,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -890,10 +892,10 @@
         {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 470.101599,
-          "credits": 19,
-          "costUsd": 0.003785,
-          "cached": true
+          "modelMs": 549.126748,
+          "credits": 22,
+          "costUsd": 0.004382,
+          "cached": false
         }
       ]
     },
@@ -1124,13 +1126,13 @@
       "scorecard": {
         "recommendation": "human_review",
         "recommendationProbabilities": {
-          "advance": 0.004403667842915942,
-          "human_review": 0.9894406885712097,
-          "reject": 0.006155643585874354
+          "advance": 0.004719294323539553,
+          "human_review": 0.9883756632313084,
+          "reject": 0.006905042445152014
         },
         "seniority": "Junior",
         "summary": "The applicant does not meet the required five years of professional data engineering experience and lacks established experience with Airflow, Spark, or Kafka. Additionally, an integrity finding was identified as the file contains hidden text with instructions aimed at the AI screener",
-        "interviewQuestions": "1. Can you describe a specific project where you used Airflow, Spark, or Kafka to build and operate a data pipeline in a production environment?\n2. How have you handled scaling or managing data pipelines using one of those specific technologies?\n3. Could you walk me through the architecture of a pipeline you built using Airflow, Spark, or Kafka, including how you monitored its performance?"
+        "interviewQuestions": "1. Can you describe your experience building and operating data pipelines using Airflow, Spark, or Kafka in a production environment?\n2. Could you provide specific examples of how you have led technical projects or mentored junior engineers in your previous roles?\n3. Given your experience with batch ETL, how have you scaled your data pipelines to handle increasing volumes of data using tools like Spark or Kafka?"
       },
       "decision": {
         "outcome": "flagged",
@@ -1139,6 +1141,7 @@
           "Instruction aimed at the AI screener (instruction override)"
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "injection",
@@ -1162,14 +1165,6 @@
           "modelMs": 21.275137,
           "credits": 1,
           "costUsd": 0.000199,
-          "cached": false
-        },
-        {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 204.922119,
-          "credits": 9,
-          "costUsd": 0.001793,
           "cached": true
         },
         {
@@ -1181,11 +1176,27 @@
           "cached": true
         },
         {
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 204.922119,
+          "credits": 9,
+          "costUsd": 0.001793,
+          "cached": true
+        },
+        {
           "endpoint": "decide",
           "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
           "modelMs": 60.218208,
           "credits": 3,
           "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 43.353535,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -1214,14 +1225,6 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 43.353535,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
           "modelMs": 42.192352,
           "credits": 2,
@@ -1231,10 +1234,10 @@
         {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 481.075682,
-          "credits": 20,
-          "costUsd": 0.003984,
-          "cached": true
+          "modelMs": 387.475552,
+          "credits": 16,
+          "costUsd": 0.003187,
+          "cached": false
         }
       ]
     },
@@ -1493,13 +1496,13 @@
       "scorecard": {
         "recommendation": "human_review",
         "recommendationProbabilities": {
-          "advance": 0.0025091913716882293,
-          "human_review": 0.9948348969494498,
-          "reject": 0.0026559116788619497
+          "advance": 0.0026319128717724517,
+          "human_review": 0.9939365709112178,
+          "reject": 0.003431516217009761
         },
         "seniority": "Senior",
-        "summary": "The applicant meets the core technical requirements with 6 years of experience in Spark, Kafka, and SQL. However, the application contains integrity findings including hidden text and instructions aimed at the AI screener. Due to these contradictions and potential manipulation attempts, the application requires human review",
-        "interviewQuestions": "1. Can you describe a situation where you took the lead on a technical project or mentored a junior team member?\n2. How have you approached mentoring or guiding other engineers in your previous roles?\n3. Could you provide an example of a time you led a team through a complex data engineering challenge?"
+        "summary": "The applicant meets the core technical requirements with 6 years of experience in Spark, Kafka, and SQL. However, the application contains integrity findings including hidden metadata text and instructions aimed at the AI screener",
+        "interviewQuestions": "1. Can you describe a situation where you took the lead on a technical project or mentored a junior team member?\n2. What specific leadership or mentoring responsibilities have you held in your previous roles?\n3. How do you approach guiding other engineers through complex data engineering challenges or code reviews?"
       },
       "decision": {
         "outcome": "flagged",
@@ -1509,13 +1512,14 @@
           "Instruction aimed at the AI screener (instruction override)"
         ]
       },
+      "warnings": [],
       "trail": [
         {
-          "endpoint": "pii",
-          "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
-          "modelMs": 247.400925,
-          "credits": 10,
-          "costUsd": 0.001992,
+          "endpoint": "decide",
+          "purpose": "Classify what each piece of hidden text is trying to do",
+          "modelMs": 25.805408,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -1527,25 +1531,17 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Classify what each piece of hidden text is trying to do",
-          "modelMs": 25.805408,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": false
-        },
-        {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 60.386433,
-          "credits": 3,
-          "costUsd": 0.000598,
+          "endpoint": "pii",
+          "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
+          "modelMs": 247.400925,
+          "credits": 10,
+          "costUsd": 0.001992,
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 54.792416,
+          "endpoint": "decide",
+          "purpose": "Judge each job requirement on the blind visible resume",
+          "modelMs": 59.91568,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -1560,16 +1556,16 @@
         },
         {
           "endpoint": "decide",
-          "purpose": "Judge each job requirement on the blind visible resume",
-          "modelMs": 59.91568,
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 60.386433,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 54.418335,
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 54.792416,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -1592,6 +1588,14 @@
         },
         {
           "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 54.418335,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
           "modelMs": 43.246494,
           "credits": 2,
@@ -1601,10 +1605,10 @@
         {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 375.291296,
-          "credits": 16,
-          "costUsd": 0.003187,
-          "cached": true
+          "modelMs": 357.902175,
+          "credits": 15,
+          "costUsd": 0.002988,
+          "cached": false
         }
       ]
     },
@@ -1949,6 +1953,7 @@
           "Claim contradicted by records: \"AWS Certified Data Engineer – Associate (2024)\""
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "injection",
@@ -1975,9 +1980,17 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Judge each job requirement on the blind visible resume",
-          "modelMs": 59.735073,
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 55.093922,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 53.836639,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -1991,17 +2004,9 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 55.093922,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 53.836639,
+          "endpoint": "decide",
+          "purpose": "Judge each job requirement on the blind visible resume",
+          "modelMs": 59.735073,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -2023,19 +2028,19 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 53.764511,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
           "endpoint": "grounding",
           "purpose": "Verify resume claims against references and credential records",
           "modelMs": 230.254562,
           "credits": 10,
           "costUsd": 0.001992,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 53.764511,
+          "credits": 3,
+          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -2245,13 +2250,13 @@
       "scorecard": {
         "recommendation": "advance",
         "recommendationProbabilities": {
-          "advance": 0.9527490138561837,
-          "human_review": 0.03245603204399943,
-          "reject": 0.014794954099816853
+          "advance": 0.9938928703045223,
+          "human_review": 0.003563832570465427,
+          "reject": 0.0025432971250122383
         },
         "seniority": "Senior",
-        "summary": "The applicant is a highly qualified Senior Data Engineer with over five years of experience designing scalable pipelines using Airflow, Spark, and Kafka. They meet all must-have requirements, including production experience with Python and SQL, and have demonstrated leadership through mentoring junior engineers. No integrity findings were identified during the screening process",
-        "interviewQuestions": "1. Can you describe a specific instance where you designed and deployed a production-level data pipeline using Airflow, Spark, or Kafka, including how you handled data quality and scaling?\n2. Could you walk us through a complex data problem you solved using Python and SQL in a production environment?\n3. Since no external references were provided, could you elaborate on your experience mentoring junior engineers and how you measured the impact of your leadership on the team's technical growth?"
+        "summary": "The applicant is a highly qualified Senior Data Engineer with over 6 years of professional experience meeting all must-have requirements, including proficiency in Python, SQL, Airflow, Spark, and Kafka. They have a proven track record of designing scalable pipelines and mentoring junior engineers, with no integrity findings identified",
+        "interviewQuestions": ""
       },
       "decision": {
         "outcome": "flagged",
@@ -2259,21 +2264,22 @@
           "Resume text copied with Candidate G"
         ]
       },
+      "warnings": [],
       "trail": [
-        {
-          "endpoint": "injection",
-          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-          "modelMs": 31.528959,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
         {
           "endpoint": "pii",
           "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
           "modelMs": 152.668732,
           "credits": 7,
           "costUsd": 0.001394,
+          "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+          "modelMs": 31.528959,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -2285,25 +2291,9 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 54.566463,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
           "endpoint": "decide",
           "purpose": "Judge each job requirement on the blind visible resume",
           "modelMs": 59.959393,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 54.580959,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -2318,10 +2308,18 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-          "modelMs": 43.180546,
-          "credits": 2,
-          "costUsd": 0.000398,
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 54.566463,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 54.580959,
+          "credits": 3,
+          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -2341,12 +2339,20 @@
           "cached": true
         },
         {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+          "modelMs": 43.180546,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 561.414304,
-          "credits": 23,
-          "costUsd": 0.004582,
-          "cached": true
+          "modelMs": 323.21699,
+          "credits": 13,
+          "costUsd": 0.00259,
+          "cached": false
         }
       ]
     },
@@ -2547,12 +2553,12 @@
       "scorecard": {
         "recommendation": "advance",
         "recommendationProbabilities": {
-          "advance": 0.9500716512214277,
-          "human_review": 0.03642707551151721,
-          "reject": 0.013501273267055126
+          "advance": 0.9938750968720504,
+          "human_review": 0.003223499539182904,
+          "reject": 0.0029014035887666508
         },
         "seniority": "Senior",
-        "summary": "The applicant is a highly qualified Senior Data Engineer with over five years of professional experience and proven expertise in Python, SQL, Airflow, Spark, and Kafka. They meet all must-have requirements, including production experience with core technologies and leadership through mentoring. No integrity findings were identified during the screening process",
+        "summary": "The applicant is a highly qualified Senior Data Engineer with over five years of professional experience and proven expertise in Python, SQL, Airflow, Spark, and Kafka. They meet all must-have requirements and have demonstrated leadership through mentoring junior engineers. No integrity findings were identified",
         "interviewQuestions": ""
       },
       "decision": {
@@ -2561,6 +2567,7 @@
           "Resume text copied with Candidate F"
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "pii",
@@ -2579,14 +2586,6 @@
           "cached": true
         },
         {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 233.488541,
-          "credits": 10,
-          "costUsd": 0.001992,
-          "cached": true
-        },
-        {
           "endpoint": "decide",
           "purpose": "Judge each job requirement on the blind visible resume",
           "modelMs": 59.67997,
@@ -2595,11 +2594,11 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 60.169376,
-          "credits": 3,
-          "costUsd": 0.000598,
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 233.488541,
+          "credits": 10,
+          "costUsd": 0.001992,
           "cached": true
         },
         {
@@ -2614,6 +2613,14 @@
           "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
           "modelMs": 53.989857,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 60.169376,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -2645,10 +2652,10 @@
         {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 316.761442,
-          "credits": 13,
-          "costUsd": 0.00259,
-          "cached": true
+          "modelMs": 277.746337,
+          "credits": 12,
+          "costUsd": 0.00239,
+          "cached": false
         }
       ]
     },
@@ -2890,13 +2897,13 @@
       "scorecard": {
         "recommendation": "human_review",
         "recommendationProbabilities": {
-          "advance": 0.0034741216255609855,
-          "human_review": 0.992212352114979,
-          "reject": 0.004313526259459969
+          "advance": 0.0036130204359344515,
+          "human_review": 0.9921826420073263,
+          "reject": 0.004204337556739239
         },
         "seniority": "Senior",
-        "summary": "The applicant meets all must-have requirements, including 5 years of experience and proficiency in Python, SQL, and Airflow. However, there is an integrity finding as the cover letter contradicts the resume regarding the applicant's start date and role history at Carpathia Games. Due to this conflict, human review is required",
-        "interviewQuestions": "1. Can you clarify your specific start date and role progression at Carpathia Games to reconcile the timeline in your resume with your cover letter?\n2. Could you describe your experience in leading technical projects or mentoring junior team members during your time at Carpathia Games or in your freelance work?\n3. Given the discrepancy regarding your tenure at Carpathia Games, can you walk us through your professional timeline from 2019 to the present?"
+        "summary": "The applicant meets all must-have technical requirements, including 5 years of experience with Python, SQL, Airflow, and GCP. However, there is an integrity finding due to a conflict between the resume and cover letter regarding the applicant's start date and role history at Carpathia Games. Human review is required to resolve these contradictory claims",
+        "interviewQuestions": "1. Can you clarify your specific start date and role progression at Carpathia Games to reconcile the timeline in your resume with your cover letter?\n2. Could you describe your experience in leading technical projects or mentoring junior team members during your time at Carpathia Games or in your freelance work?\n3. Given the discrepancy regarding your tenure at Carpathia Games, can you walk us through your professional data engineering experience from 2019 to the present?"
       },
       "decision": {
         "outcome": "flagged",
@@ -2904,6 +2911,7 @@
           "Resume and cover letter disagree"
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "injection",
@@ -2947,14 +2955,6 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 43.152447,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
           "modelMs": 46.094688,
           "credits": 2,
@@ -2963,8 +2963,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-          "modelMs": 42.299648,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 43.152447,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -2979,8 +2979,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 43.133087,
+          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+          "modelMs": 42.299648,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -2994,12 +2994,20 @@
           "cached": true
         },
         {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 43.133087,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 530.830784,
+          "modelMs": 538.721827,
           "credits": 22,
           "costUsd": 0.004382,
-          "cached": true
+          "cached": false
         }
       ]
     },
@@ -3278,13 +3286,13 @@
       "scorecard": {
         "recommendation": "human_review",
         "recommendationProbabilities": {
-          "advance": 0.005863711476258288,
-          "human_review": 0.981361855913391,
-          "reject": 0.012774432610350734
+          "advance": 0.007448585456893676,
+          "human_review": 0.9804147378157927,
+          "reject": 0.01213667672731363
         },
         "seniority": "Staff",
-        "summary": "The applicant meets all must-have technical requirements, including extensive experience with Spark, Kafka, and AWS. However, the take-home code inspection revealed malicious data exfiltration, which is a critical integrity finding",
-        "interviewQuestions": "1. Can you walk us through a specific instance where you implemented a data exfiltration prevention measure in your production pipelines?\n2. How do you ensure the security and integrity of data when designing streaming architectures with Kafka and Spark?\n3. Describe your process for auditing code to prevent unauthorized data transfers or malicious scripts from entering the production environment"
+        "summary": "The applicant meets all must-have technical requirements, including extensive experience with Spark, Kafka, and AWS. However, the take-home code inspection revealed malicious data exfiltration, which constitutes a critical integrity finding",
+        "interviewQuestions": "1. Can you walk us through the security measures you implemented in your data pipelines to prevent unauthorized data exfiltration?\n2. How do you ensure that your code follows best practices for data privacy and security when handling sensitive information?\n3. Describe a time when you identified a security vulnerability in a data pipeline and the steps you took to remediate it"
       },
       "decision": {
         "outcome": "flagged",
@@ -3292,6 +3300,7 @@
           "Take-home code is malicious: data exfiltration"
         ]
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "injection",
@@ -3318,19 +3327,19 @@
           "cached": true
         },
         {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 282.077332,
-          "credits": 12,
-          "costUsd": 0.00239,
-          "cached": true
-        },
-        {
           "endpoint": "decide",
           "purpose": "Judge each job requirement on the blind visible resume",
           "modelMs": 59.870975,
           "credits": 3,
           "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 282.077332,
+          "credits": 12,
+          "costUsd": 0.00239,
           "cached": true
         },
         {
@@ -3351,8 +3360,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 53.942463,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 54.887489,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -3367,6 +3376,14 @@
         },
         {
           "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 53.942463,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
           "modelMs": 54.572193,
           "credits": 3,
@@ -3374,20 +3391,12 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 54.887489,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
-          "modelMs": 491.012642,
-          "credits": 20,
-          "costUsd": 0.003984,
-          "cached": true
+          "modelMs": 355.678144,
+          "credits": 15,
+          "costUsd": 0.002988,
+          "cached": false
         }
       ]
     },
@@ -3716,6 +3725,7 @@
         "outcome": "reject",
         "reasons": []
       },
+      "warnings": [],
       "trail": [
         {
           "endpoint": "pii",
@@ -3750,27 +3760,11 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 54.913185,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
           "endpoint": "extract",
           "purpose": "Read roles, skills, education and certifications verbatim",
           "modelMs": 232.315842,
           "credits": 10,
           "costUsd": 0.001992,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 53.476002,
-          "credits": 3,
-          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -3783,8 +3777,16 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 53.050785,
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 54.913185,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 53.476002,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -3793,6 +3795,14 @@
           "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
           "modelMs": 53.337887,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 53.050785,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -3816,6 +3826,8 @@
       ]
     }
   ],
+  "failed": [],
+  "warnings": [],
   "duplicates": [
     {
       "a": "Candidate F",
@@ -3832,19 +3844,19 @@
   ],
   "trail": [
     {
-      "endpoint": "injection",
-      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-      "modelMs": 26.772192,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
       "endpoint": "pii",
       "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
       "modelMs": 188.357025,
       "credits": 8,
       "costUsd": 0.001594,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+      "modelMs": 26.772192,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -3872,25 +3884,9 @@
       "cached": true
     },
     {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 240.754303,
-      "credits": 10,
-      "costUsd": 0.001992,
-      "cached": true
-    },
-    {
       "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
       "modelMs": 76.915009,
-      "credits": 4,
-      "costUsd": 0.000797,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 76.788254,
       "credits": 4,
       "costUsd": 0.000797,
       "cached": true
@@ -3905,6 +3901,14 @@
     },
     {
       "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+      "modelMs": 77.563362,
+      "credits": 4,
+      "costUsd": 0.000797,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
       "modelMs": 77.836067,
       "credits": 4,
@@ -3913,18 +3917,18 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-      "modelMs": 77.563362,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 76.788254,
       "credits": 4,
       "costUsd": 0.000797,
       "cached": true
     },
     {
-      "endpoint": "grounding",
-      "purpose": "Verify resume claims against references and credential records",
-      "modelMs": 268.440796,
-      "credits": 11,
-      "costUsd": 0.002191,
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 240.754303,
+      "credits": 10,
+      "costUsd": 0.001992,
       "cached": true
     },
     {
@@ -3933,6 +3937,14 @@
       "modelMs": 143.943684,
       "credits": 6,
       "costUsd": 0.001195,
+      "cached": true
+    },
+    {
+      "endpoint": "grounding",
+      "purpose": "Verify resume claims against references and credential records",
+      "modelMs": 268.440796,
+      "credits": 11,
+      "costUsd": 0.002191,
       "cached": true
     },
     {
@@ -3965,14 +3977,6 @@
       "modelMs": 20.736576,
       "credits": 1,
       "costUsd": 0.000199,
-      "cached": false
-    },
-    {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 226.37738,
-      "credits": 10,
-      "costUsd": 0.001992,
       "cached": true
     },
     {
@@ -3981,6 +3985,22 @@
       "modelMs": 58.784672,
       "credits": 3,
       "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 49.383202,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 226.37738,
+      "credits": 10,
+      "costUsd": 0.001992,
       "cached": true
     },
     {
@@ -4001,24 +4021,16 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 42.013729,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 49.383202,
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 42.438656,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 42.438656,
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 42.013729,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4034,10 +4046,10 @@
     {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 470.101599,
-      "credits": 19,
-      "costUsd": 0.003785,
-      "cached": true
+      "modelMs": 549.126748,
+      "credits": 22,
+      "costUsd": 0.004382,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4061,14 +4073,6 @@
       "modelMs": 21.275137,
       "credits": 1,
       "costUsd": 0.000199,
-      "cached": false
-    },
-    {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 204.922119,
-      "credits": 9,
-      "costUsd": 0.001793,
       "cached": true
     },
     {
@@ -4080,11 +4084,27 @@
       "cached": true
     },
     {
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 204.922119,
+      "credits": 9,
+      "costUsd": 0.001793,
+      "cached": true
+    },
+    {
       "endpoint": "decide",
       "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
       "modelMs": 60.218208,
       "credits": 3,
       "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 43.353535,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4113,14 +4133,6 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 43.353535,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
       "modelMs": 42.192352,
       "credits": 2,
@@ -4130,17 +4142,17 @@
     {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 481.075682,
-      "credits": 20,
-      "costUsd": 0.003984,
-      "cached": true
+      "modelMs": 387.475552,
+      "credits": 16,
+      "costUsd": 0.003187,
+      "cached": false
     },
     {
-      "endpoint": "pii",
-      "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
-      "modelMs": 247.400925,
-      "credits": 10,
-      "costUsd": 0.001992,
+      "endpoint": "decide",
+      "purpose": "Classify what each piece of hidden text is trying to do",
+      "modelMs": 25.805408,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4152,25 +4164,17 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Classify what each piece of hidden text is trying to do",
-      "modelMs": 25.805408,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": false
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 60.386433,
-      "credits": 3,
-      "costUsd": 0.000598,
+      "endpoint": "pii",
+      "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
+      "modelMs": 247.400925,
+      "credits": 10,
+      "costUsd": 0.001992,
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 54.792416,
+      "endpoint": "decide",
+      "purpose": "Judge each job requirement on the blind visible resume",
+      "modelMs": 59.91568,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4185,16 +4189,16 @@
     },
     {
       "endpoint": "decide",
-      "purpose": "Judge each job requirement on the blind visible resume",
-      "modelMs": 59.91568,
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 60.386433,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 54.418335,
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 54.792416,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4217,6 +4221,14 @@
     },
     {
       "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 54.418335,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
       "modelMs": 43.246494,
       "credits": 2,
@@ -4226,10 +4238,10 @@
     {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 375.291296,
-      "credits": 16,
-      "costUsd": 0.003187,
-      "cached": true
+      "modelMs": 357.902175,
+      "credits": 15,
+      "costUsd": 0.002988,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4256,9 +4268,17 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Judge each job requirement on the blind visible resume",
-      "modelMs": 59.735073,
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 55.093922,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 53.836639,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4272,17 +4292,9 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 55.093922,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 53.836639,
+      "endpoint": "decide",
+      "purpose": "Judge each job requirement on the blind visible resume",
+      "modelMs": 59.735073,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4304,19 +4316,19 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-      "modelMs": 53.764511,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
       "endpoint": "grounding",
       "purpose": "Verify resume claims against references and credential records",
       "modelMs": 230.254562,
       "credits": 10,
       "costUsd": 0.001992,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+      "modelMs": 53.764511,
+      "credits": 3,
+      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4328,19 +4340,19 @@
       "cached": true
     },
     {
-      "endpoint": "injection",
-      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-      "modelMs": 31.528959,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
       "endpoint": "pii",
       "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
       "modelMs": 152.668732,
       "credits": 7,
       "costUsd": 0.001394,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+      "modelMs": 31.528959,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4352,25 +4364,9 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 54.566463,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
       "endpoint": "decide",
       "purpose": "Judge each job requirement on the blind visible resume",
       "modelMs": 59.959393,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 54.580959,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4385,10 +4381,18 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 43.180546,
-      "credits": 2,
-      "costUsd": 0.000398,
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 54.566463,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 54.580959,
+      "credits": 3,
+      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4408,12 +4412,20 @@
       "cached": true
     },
     {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 43.180546,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 561.414304,
-      "credits": 23,
-      "costUsd": 0.004582,
-      "cached": true
+      "modelMs": 323.21699,
+      "credits": 13,
+      "costUsd": 0.00259,
+      "cached": false
     },
     {
       "endpoint": "pii",
@@ -4432,14 +4444,6 @@
       "cached": true
     },
     {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 233.488541,
-      "credits": 10,
-      "costUsd": 0.001992,
-      "cached": true
-    },
-    {
       "endpoint": "decide",
       "purpose": "Judge each job requirement on the blind visible resume",
       "modelMs": 59.67997,
@@ -4448,11 +4452,11 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 60.169376,
-      "credits": 3,
-      "costUsd": 0.000598,
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 233.488541,
+      "credits": 10,
+      "costUsd": 0.001992,
       "cached": true
     },
     {
@@ -4467,6 +4471,14 @@
       "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
       "modelMs": 53.989857,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 60.169376,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4498,10 +4510,10 @@
     {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 316.761442,
-      "credits": 13,
-      "costUsd": 0.00259,
-      "cached": true
+      "modelMs": 277.746337,
+      "credits": 12,
+      "costUsd": 0.00239,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4545,14 +4557,6 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 43.152447,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
       "modelMs": 46.094688,
       "credits": 2,
@@ -4561,8 +4565,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 42.299648,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 43.152447,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4577,8 +4581,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-      "modelMs": 43.133087,
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 42.299648,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4592,12 +4596,20 @@
       "cached": true
     },
     {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+      "modelMs": 43.133087,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 530.830784,
+      "modelMs": 538.721827,
       "credits": 22,
       "costUsd": 0.004382,
-      "cached": true
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4624,19 +4636,19 @@
       "cached": true
     },
     {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 282.077332,
-      "credits": 12,
-      "costUsd": 0.00239,
-      "cached": true
-    },
-    {
       "endpoint": "decide",
       "purpose": "Judge each job requirement on the blind visible resume",
       "modelMs": 59.870975,
       "credits": 3,
       "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 282.077332,
+      "credits": 12,
+      "costUsd": 0.00239,
       "cached": true
     },
     {
@@ -4657,8 +4669,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 53.942463,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 54.887489,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4673,6 +4685,14 @@
     },
     {
       "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 53.942463,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
       "modelMs": 54.572193,
       "credits": 3,
@@ -4680,20 +4700,12 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 54.887489,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
-      "modelMs": 491.012642,
-      "credits": 20,
-      "costUsd": 0.003984,
-      "cached": true
+      "modelMs": 355.678144,
+      "credits": 15,
+      "costUsd": 0.002988,
+      "cached": false
     },
     {
       "endpoint": "pii",
@@ -4728,27 +4740,11 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 54.913185,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
       "endpoint": "extract",
       "purpose": "Read roles, skills, education and certifications verbatim",
       "modelMs": 232.315842,
       "credits": 10,
       "costUsd": 0.001992,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 53.476002,
-      "credits": 3,
-      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4761,8 +4757,16 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-      "modelMs": 53.050785,
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 54.913185,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 53.476002,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4771,6 +4775,14 @@
       "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
       "modelMs": 53.337887,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+      "modelMs": 53.050785,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true

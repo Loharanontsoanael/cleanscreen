@@ -49,6 +49,17 @@ Every endpoint changes what the app does or shows. All calls run server-side wit
 
 Every call is recorded with its purpose, model time and credits, and shown on the applicant page under "How this was decided". The demo round of ten applicants used **121 calls and 668 credits** (about **67 credits, or roughly 1.3 cents, per applicant**), with about 15 seconds of total model time.
 
+## Reliability and Clocked best practices
+
+- **Idempotency and retries as the docs describe.** The SDK retries 429, 5xx and network failures under one idempotency key, so work is billed once. When Clocked answers that an attempt has ended (`retryAsNew`), CleanScreen starts a fresh attempt, at most twice, by choice rather than by default.
+- **A bounded queue.** All calls go through one semaphore sized to the account's concurrency allowance (`CLOCKED_CONCURRENCY`), instead of an unbounded fan-out; throttling never raises parallelism.
+- **Inside every admission limit.** `src/lib/limits.ts` holds the documented limits, and every request is shaped to fit: text longer than 60,000 characters is split for `/injection` and `/pii` and the returned spans are mapped back to the full text; `/decide` gets at most 64 documents, `/rerank` 256 passages, `/grounding` 20 records and 30 claims, `/compare` 20 documents within its character budget. Offsets are handled in Unicode code points, the unit Clocked uses.
+- **Essential and secondary steps.** If an essential step fails (the manipulation check, anonymisation, the blind requirement judgment), only that application stops and the round reports why. If a secondary step fails (proof passages, reference checks, the cover letter, take-home code, the scorecard), the application is screened without it, the page says what was not checked, and it cannot go straight to interview.
+- **Account problems stop cleanly.** A rejected key, an exhausted credit balance or an inactive plan ends the screening with one clear message instead of failing applicant by applicant.
+- **Nothing wasted.** When a visitor leaves mid-screening, pending Clocked calls are cancelled through the SDK's `AbortSignal`.
+- **Files it cannot read.** Corrupt, password-protected, image-only (scanned) and over-long PDFs are rejected with a reason before any credit is spent.
+- **Tests without credits.** `npm test` runs 33 tests against generated PDFs and a fake Clocked client: hidden-text detection for every method, honest designs that must not be flagged, unreadable files, the decision policy, chunking, failed and cancelled calls. GitHub Actions runs lint, type checks, tests and a production build on every push.
+
 ## How the hidden-text detection works
 
 Detection is visual, not a list of tricks. Each PDF page is rendered with MuPDF and every run of text is located on the bitmap: a run that leaves no ink where it should be is hidden, whatever produced it (white on white, colour matched to a background, invisible render mode, covered by a shape). Runs smaller than 4 pt or mostly outside the page are flagged too, and the Subject and Keywords metadata fields are read as hidden text. Clocked then judges what the hidden text is for.
@@ -104,6 +115,7 @@ npm run dev                    # http://localhost:3000
 - Regenerate the fictional resumes: `node scripts/generate-demo.mjs`
 - Re-run the analysis on them: `node --env-file=.env.local --conditions=react-server --import tsx scripts/run-demo.ts`
 - In development, identical Clocked requests are cached in `.cache/` so iterating spends no credits.
+- `npm test` runs the test suite (no key needed), `npm run lint` and `npm run typecheck` the static checks.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
@@ -116,7 +128,9 @@ npm run dev                    # http://localhost:3000
 
 - `src/lib/forensics.ts`: the person-versus-machine reading of a PDF.
 - `src/lib/analysis.ts`: the screening pipeline, the Clocked calls and the decision policy.
-- `src/lib/clocked.ts`: the Clocked client wrapper (concurrency, retries, audit trail, dev cache).
+- `src/lib/clocked.ts`: the Clocked client wrapper (concurrency, retries, cancellation, error handling, audit trail, dev cache).
+- `src/lib/limits.ts` and `src/lib/policy.ts`: the documented API limits, and the decision rule.
+- `tests/`: the test suite; `scripts/fixtures.ts` generates the resumes it and the benchmark use.
 - `src/app/api/screen/route.ts`: live screening, streamed as NDJSON.
 - `src/components/`: the shortlist, the applicant page and the UV lamp.
 

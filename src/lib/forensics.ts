@@ -1,5 +1,6 @@
 import "server-only";
 import * as mupdf from "mupdf";
+import { LIMITS } from "./limits";
 
 /**
  * PDF forensics: separate what a human reviewer sees on the page from what a
@@ -106,11 +107,25 @@ function classify(run: Omit<TextRun, "hidden">, bounds: Rect, pix: mupdf.Pixmap)
   return null;
 }
 
-export function analysePdf(bytes: Uint8Array): PdfForensics {
-  const doc = mupdf.Document.openDocument(bytes, "application/pdf");
+/** A file CleanScreen cannot screen, with a reason a person can act on. */
+export class UnreadablePdf extends Error {}
+
+/** Fewer visible characters than this means the PDF is a scan or an image with no text layer. */
+const MIN_TEXT_CHARS = 80;
+
+export function analysePdf(bytes: Uint8Array, maxPages: number = LIMITS.pdfPages): PdfForensics {
+  let doc: mupdf.Document;
   try {
+    doc = mupdf.Document.openDocument(bytes, "application/pdf");
+  } catch {
+    throw new UnreadablePdf("The file could not be opened as a PDF.");
+  }
+  try {
+    if (doc.needsPassword()) throw new UnreadablePdf("The PDF is password-protected.");
     const runs: TextRun[] = [];
     const pageCount = doc.countPages();
+    if (pageCount === 0) throw new UnreadablePdf("The PDF has no pages.");
+    if (pageCount > maxPages) throw new UnreadablePdf(`The PDF has ${pageCount} pages; resumes of up to ${maxPages} pages are screened.`);
     const pageSizes: PdfForensics["pageSizes"] = [];
     for (let p = 0; p < pageCount; p++) {
       const page = doc.loadPage(p);
@@ -198,6 +213,9 @@ export function analysePdf(bytes: Uint8Array): PdfForensics {
     const visibleText = join(runs.filter((r) => !r.hidden));
     const machineText = [join(runs), ...hidden.filter((h) => h.reason === "metadata").map((h) => h.text)].join("\n");
 
+    if (visibleText.replace(/\s/g, "").length < MIN_TEXT_CHARS) {
+      throw new UnreadablePdf("The PDF has no readable text; it looks like a scan. Export the resume as a text PDF.");
+    }
     return { pageCount, pageSizes, visibleText, machineText, hidden, metadata };
   } finally {
     doc.destroy();

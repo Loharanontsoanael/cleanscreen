@@ -109,6 +109,12 @@ export function CandidateDetail({
         </ul>
       </section>
 
+      {c.warnings?.length > 0 && (
+        <p className="mt-8 rounded-[14px] bg-rail px-4 py-3 text-sm text-ink-500">
+          Not checked for this application: {c.warnings.join("; ")}. CleanScreen won’t send it straight to interview.
+        </p>
+      )}
+
       <div className="mt-12 space-y-3 border-t-[1.5px] border-rule pt-6 text-sm">
         <details>
           <summary className="cursor-pointer font-medium text-ink-500 hover:text-brand-900">Interview questions</summary>

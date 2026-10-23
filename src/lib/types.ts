@@ -22,6 +22,8 @@ export interface EvidenceDoc {
 
 export interface CandidateInput {
   id: string;
+  /** The uploaded file name, used to say which file could not be screened. */
+  fileName?: string;
   resumePdf: Uint8Array;
   coverLetter?: string;
   evidence: EvidenceDoc[];
@@ -112,6 +114,8 @@ export interface CandidateReport {
   };
   /** Final routing after the safety policy is applied on top of the scorecard. */
   decision: { outcome: "advance" | "human_review" | "reject" | "flagged"; reasons: string[] };
+  /** Secondary checks that could not run for this application. */
+  warnings: string[];
   trail: CallRecord[];
 }
 
@@ -126,6 +130,10 @@ export interface RoundReport {
   job: JobInput;
   generatedAt: string;
   candidates: CandidateReport[];
+  /** Files that could not be screened at all, with the reason. */
+  failed: { file: string; error: string }[];
+  /** Round-level checks that could not run (e.g. the cross-applicant comparison). */
+  warnings: string[];
   duplicates: DuplicateFinding[];
   trail: CallRecord[];
 }
