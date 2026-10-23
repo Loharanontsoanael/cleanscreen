@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   const trail: CallRecord[] = [];
   try {
     const pdf = await BUILD[kind](bytes, trail, request.signal);
-    return new Response(pdf.buffer as ArrayBuffer, { headers: { "Content-Type": "application/pdf", "Cache-Control": "no-store" } });
+    return new Response(new Blob([pdf as Uint8Array<ArrayBuffer>]), { headers: { "Content-Type": "application/pdf", "Cache-Control": "no-store" } });
   } catch (err) {
     if (err instanceof UnreadablePdf || err instanceof ClockedUnavailable) return fail(422, err.message);
     console.error(`building the ${kind} PDF failed`, err);

@@ -29,7 +29,11 @@ function edit(bytes: Uint8Array, change: (doc: mupdf.PDFDocument) => void): Uint
   if (!doc) throw new Error("Not a PDF");
   try {
     change(doc);
-    return doc.saveToBuffer("garbage,compress").asUint8Array();
+    // asUint8Array() is a view into MuPDF's memory: copy the file out before the buffer is freed.
+    const saved = doc.saveToBuffer("garbage,compress");
+    const bytes = saved.asUint8Array().slice();
+    saved.destroy();
+    return bytes;
   } finally {
     doc.destroy();
   }
