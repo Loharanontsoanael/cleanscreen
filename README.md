@@ -63,7 +63,7 @@ Every call is recorded with its purpose, model time and credits, and shown on th
 - **Nothing wasted.** When a visitor leaves mid-screening, pending Clocked calls are cancelled through the SDK's `AbortSignal`.
 - **Files it cannot read.** Corrupt, password-protected, image-only (scanned) and over-long PDFs are rejected with a reason before any credit is spent.
 - **A daily credit ceiling.** Live screening reserves credits before a round starts and settles to what it spent; once the day's budget (`DAILY_CREDIT_BUDGET`) is used, `/run` says so and the saved demo round keeps working.
-- **Tests without credits.** `npm test` runs 54 tests against generated PDFs and a fake Clocked client: hidden-text and Unicode detection for every method, honest designs that must not be flagged, unreadable files, every branch of the decision policy, the credit budget, the blind and evidence PDFs, the exports, chunking, failed and cancelled calls. GitHub Actions runs lint, type checks, tests and a production build on every push.
+- **Tests without credits.** `npm test` runs 57 tests against generated PDFs and a fake Clocked client: hidden-text and Unicode detection for every method, honest designs that must not be flagged, unreadable files, every branch of the decision policy, the credit budget, the blind and evidence PDFs, the exports, clipped documents, chunking, failed and cancelled calls. GitHub Actions runs lint, type checks, tests and a production build on every push.
 
 ## Uncertain results, missing information and failed requests
 
@@ -112,6 +112,10 @@ On a real two-page resume this produced no false alarm: the visible and the mach
 
 The first run raised two false alarms: ordinary metadata such as "Subject: Curriculum vitae" was read as keyword stuffing. Metadata that only names the document or repeats words from the page is now ignored; real metadata attacks are still caught. A fixture that put a name and a greeting in two scripts after "Languages:" was flagged by `/injection`, fairly: the line made no sense. The honest multilingual resume now lists languages the way people do. Per-case results are in `data/benchmark/results.json`. Re-run with `node --env-file=.env.local --conditions=react-server --import tsx scripts/benchmark.ts`.
 
+## Try it live
+
+On [/run](https://cleanscreen.vercel.app/run), "Try sample applicants" loads four fictional applicants with their documents: one hides a senior role in white ink, one has references and a certification lookup that contradict the resume, one sends a cover letter with different dates, and one hands in take-home code that posts AWS credentials to a remote server. Screening them calls all nine endpoints live, in about a minute. Your own PDFs work the same way; clip documents to a resume with the tabs on its sheet.
+
 ## The demo round
 
 Ten fictional applicants for a Senior Data Engineer role, each with a different situation:
@@ -144,7 +148,7 @@ curl https://cleanscreen.vercel.app/api/screen \
 
 | Endpoint | Sends | Returns |
 | --- | --- | --- |
-| `POST /api/screen` | `title`, `requirements` (JSON list of `{ text, mustHave }`, at most 8), `resumes` (1 to 10 PDFs, 3 MB each) | With `Accept: application/json`, the whole round as JSON: per applicant `decision.outcome` (`advance`, `human_review`, `reject`, `flagged`) and `decision.reasons`, requirement verdicts with probabilities, hidden findings, and every Clocked call in `trail`. Without it, NDJSON progress events ending with `{ "type": "report" }`. |
+| `POST /api/screen` | `title`, `requirements` (JSON list of `{ text, mustHave }`, at most 8), `resumes` (1 to 10 PDFs, 3 MB each); optionally, for the resume at position `i` (from 0), `cover-i` (a cover letter), `reference-i` (up to 3 references or credential records) and `code-i` (take-home code), as PDF or text | With `Accept: application/json`, the whole round as JSON: per applicant `decision.outcome` (`advance`, `human_review`, `reject`, `flagged`) and `decision.reasons`, requirement verdicts with probabilities, hidden findings, and every Clocked call in `trail`. Without it, NDJSON progress events ending with `{ "type": "report" }`. |
 | `POST /api/document` | `kind` (`blind` or `evidence`), `resume` (one PDF) | The blind copy or the evidence PDF. |
 
 Errors come back as `{ "error": "..." }` with a 4xx or 5xx status: 429 past the hourly limit per visitor, 503 once the daily credit budget is spent or the Clocked account is unavailable. Nothing sent is stored.
@@ -163,7 +167,7 @@ cp .env.example .env.local     # then paste your key after CLOCKED_API_KEY=
 npm run dev                    # http://localhost:3000
 ```
 
-- `/` replays the saved demo round. `/run` screens your own PDFs live.
+- `/` replays the saved demo round. `/run` screens your own PDFs live: clip a cover letter, references or take-home code to any resume with the tabs on its sheet, or press "Try sample applicants" to load four fictional applicants with their documents and run all nine endpoints live.
 - Regenerate the fictional resumes: `node scripts/generate-demo.mjs`
 - Re-run the analysis on them: `node --env-file=.env.local --conditions=react-server --import tsx scripts/run-demo.ts`
 - In development, identical Clocked requests are cached in `.cache/` so iterating spends no credits.

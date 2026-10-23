@@ -1,4 +1,5 @@
 import { analyseRound, type ProgressEvent } from "@/lib/analysis";
+import { BadAttachment, MAX_REFERENCES, readCode, readDocument, titleOf } from "@/lib/attachments";
 import { CREDITS_PER_RESUME, liveBudget } from "@/lib/budget";
 import { ClockedUnavailable } from "@/lib/clocked";
 import type { CandidateInput, JobInput, Requirement, RoundReport } from "@/lib/types";
@@ -62,7 +63,28 @@ export async function POST(request: Request) {
     if (file.size > MAX_BYTES) return fail(413, `${file.name} is larger than 3 MB.`);
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") return fail(400, `${file.name} is not a PDF.`);
-    candidates.push({ id: `upload-${i + 1}`, fileName: file.name, resumePdf: bytes, evidence: [] });
+    // Documents clipped to this resume arrive as cover-<i>, reference-<i> and code-<i>.
+    const one = (key: string) => {
+      const f = form.get(`${key}-${i}`);
+      return f instanceof File ? f : null;
+    };
+    const references = form.getAll(`reference-${i}`).filter((f): f is File => f instanceof File);
+    if (references.length > MAX_REFERENCES) return fail(400, `Clip at most ${MAX_REFERENCES} references to ${file.name}.`);
+    try {
+      const cover = one("cover");
+      const code = one("code");
+      candidates.push({
+        id: `upload-${i + 1}`,
+        fileName: file.name,
+        resumePdf: bytes,
+        coverLetter: cover ? await readDocument(cover) : undefined,
+        evidence: await Promise.all(references.map(async (r, j) => ({ id: `reference-${j + 1}`, title: titleOf(r.name), text: await readDocument(r) }))),
+        code: code ? await readCode(code) : undefined,
+      });
+    } catch (err) {
+      if (err instanceof BadAttachment) return fail(400, err.message);
+      throw err;
+    }
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Add01Icon, Cancel01Icon, File01Icon, Upload04Icon } from "@hugeicons/core-free-icons";
+import { useState } from "react";
+import { Add01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { RoundReport } from "@/lib/types";
+import { ApplicantDesk, type Applicant } from "./applicant-desk";
 import { CandidateDetail } from "./candidate-detail";
 import { glyph } from "./glyph";
 import { Shortlist, useSelectedApplicant } from "./shortlist";
@@ -40,19 +41,44 @@ type Progress = { candidate: string; step: string };
 export function ScreenOwn() {
   const [title, setTitle] = useState(PRESETS[0].title);
   const [reqs, setReqs] = useState<Req[]>(PRESETS[0].requirements);
-  const [files, setFiles] = useState<File[]>([]);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [loadingSamples, setLoadingSamples] = useState(false);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<Progress[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<RoundReport | null>(null);
   const [selected, open] = useSelectedApplicant();
-  const input = useRef<HTMLInputElement>(null);
 
-  const addFiles = (list: FileList | null) => {
-    if (!list) return;
-    const pdfs = [...list].filter((f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
-    setFiles((prev) => [...prev, ...pdfs].slice(0, 10));
-  };
+  /** Fictional applicants with their documents, so anyone can try every check without resumes of their own. */
+  async function loadSamples() {
+    setLoadingSamples(true);
+    setError(null);
+    try {
+      const get = async (name: string, type: string) => {
+        const res = await fetch(`/samples/${encodeURIComponent(name)}`);
+        if (!res.ok) throw new Error(name);
+        return new File([await res.blob()], name, { type });
+      };
+      const pdf = (n: string) => get(n, "application/pdf");
+      const text = (n: string) => get(n, "text/plain");
+      const preset = PRESETS.find((p) => p.title === "Senior Data Engineer")!;
+      setTitle(preset.title);
+      setReqs(preset.requirements);
+      setApplicants([
+        { resume: await pdf("lucas-bernard.pdf"), references: [] },
+        {
+          resume: await pdf("hannah-weiss.pdf"),
+          references: [await text("hannah-weiss - Reference letter from Spree Mobility.txt"), await text("hannah-weiss - Certification lookup result.txt")],
+        },
+        { resume: await pdf("sofia-marin.pdf"), cover: await text("sofia-marin - Cover letter.txt"), references: [] },
+        { resume: await pdf("daniel-cho.pdf"), code: await text("features.py"), references: [] },
+      ]);
+    } catch {
+      setError("The sample applicants could not be loaded.");
+    } finally {
+      setLoadingSamples(false);
+    }
+  }
 
   async function screen() {
     setRunning(true);
@@ -62,7 +88,12 @@ export function ScreenOwn() {
     const body = new FormData();
     body.set("title", title);
     body.set("requirements", JSON.stringify(reqs.filter((r) => r.text.trim())));
-    for (const f of files) body.append("resumes", f);
+    applicants.forEach((a, i) => {
+      body.append("resumes", a.resume);
+      if (a.cover) body.set(`cover-${i}`, a.cover);
+      for (const r of a.references) body.append(`reference-${i}`, r);
+      if (a.code) body.set(`code-${i}`, a.code);
+    });
     try {
       const res = await fetch("/api/screen", { method: "POST", body });
       if (!res.ok || !res.body) {
@@ -98,8 +129,8 @@ export function ScreenOwn() {
 
   const current = report?.candidates.find((c) => c.label === selected);
   if (report && current) {
-    // Uploads are screened as upload-1, upload-2…, in the order of `files`.
-    const file = files[Number(current.id.replace("upload-", "")) - 1];
+    // Uploads are screened as upload-1, upload-2…, in the order of `applicants`.
+    const file = applicants[Number(current.id.replace("upload-", "")) - 1]?.resume;
     const documents = file
       ? async (kind: "blind" | "evidence") => {
           const body = new FormData();
@@ -130,7 +161,7 @@ export function ScreenOwn() {
     <main className="mx-auto max-w-[760px] px-5 pt-6 sm:px-7">
       <h1 className="title text-[2.4rem] leading-tight">Screen your own round</h1>
       <p className="mt-3 text-[17px] text-ink-500">
-        Describe the role, drop in up to 10 resumes as PDFs, and get the same screening as the demo. Nothing is stored:
+        Describe the role, drop in up to 10 resumes as PDFs, clip what helps check each story, and get the same screening as the demo. Nothing is stored:
         files are read, screened and forgotten.
       </p>
 
@@ -190,41 +221,23 @@ export function ScreenOwn() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-[17px] font-extrabold text-brand-900">Resumes</h2>
-        <button
-          onClick={() => input.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            addFiles(e.dataTransfer.files);
-          }}
-          className="mt-3 flex w-full flex-col items-center gap-2 rounded-[24px] border-[1.5px] border-dashed border-ink-300 bg-rail px-6 py-10 text-center hover:border-brand-400"
-        >
-          <span className="text-brand-600">{glyph(Upload04Icon, 28, 1.8)}</span>
-          <span className="font-semibold text-brand-900">Drop PDF resumes here, or click to choose</span>
-          <span className="text-sm text-ink-400">Up to 10 files, 3 MB each</span>
-        </button>
-        <input ref={input} type="file" accept="application/pdf,.pdf" multiple hidden onChange={(e) => addFiles(e.target.files)} />
-        {files.length > 0 && (
-          <ul className="mt-3 space-y-1.5">
-            {files.map((f, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm text-ink-700">
-                <span className="text-ink-400">{glyph(File01Icon, 16)}</span>
-                <span className="truncate">{f.name}</span>
-                <button onClick={() => setFiles(files.filter((_, j) => j !== i))} aria-label={`Remove ${f.name}`} className="ml-auto text-ink-400 hover:text-alerte">
-                  {glyph(Cancel01Icon, 16, 2)}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-[17px] font-extrabold text-brand-900">Applicants</h2>
+            <p className="mt-1 text-sm text-ink-400">Click a tab to clip a cover letter, references or take-home code to a resume.</p>
+          </div>
+          <button onClick={loadSamples} disabled={loadingSamples || running} className="inline-flex h-10 items-center gap-2 rounded-full bg-brand-100 px-4 text-[14px] font-bold text-brand-600 hover:bg-brand-200 disabled:opacity-60">
+            ✦ {loadingSamples ? "Loading…" : "Try sample applicants"}
+          </button>
+        </div>
+        <ApplicantDesk applicants={applicants} onChange={setApplicants} />
       </section>
 
       {error && <p className="mt-6 rounded-[14px] bg-alerte-soft px-4 py-3 text-sm text-alerte">{error}</p>}
 
       <div className="mt-8">
-        <button onClick={screen} disabled={running || !files.length || !title.trim()} className="btn btn-primary w-full sm:w-auto">
-          {running ? "Screening…" : `Screen ${files.length || ""} resume${files.length === 1 ? "" : "s"}`.replace("  ", " ")}
+        <button onClick={screen} disabled={running || !applicants.length || !title.trim()} className="btn btn-primary w-full sm:w-auto">
+          {running ? "Screening…" : `Screen ${applicants.length || ""} applicant${applicants.length === 1 ? "" : "s"}`.replace("  ", " ")}
         </button>
       </div>
 

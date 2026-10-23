@@ -1,0 +1,1 @@
+Hannah Weiss has worked at Spree Mobility since 2020 as a data engineer in the trip analytics team, which is led by our engineering manager, Jonas Brandt. Hannah was an individual contributor and did not manage other engineers. She built several of the Airflow pipelines that feed our pricing models on AWS. — People Team, Spree Mobility
