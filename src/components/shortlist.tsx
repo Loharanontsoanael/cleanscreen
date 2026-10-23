@@ -14,10 +14,18 @@ export function useSelectedApplicant(): [string | null, (label: string | null) =
     const read = () => setSelected(decodeURIComponent(window.location.hash.slice(1)) || null);
     read();
     window.addEventListener("hashchange", read);
-    return () => window.removeEventListener("hashchange", read);
+    window.addEventListener("popstate", read);
+    return () => {
+      window.removeEventListener("hashchange", read);
+      window.removeEventListener("popstate", read);
+    };
   }, []);
+  // Open the view straight away, then record it in history; waiting for a hashchange event is not
+  // reliable once the framework has taken over navigation.
   const open = (label: string | null) => {
-    window.location.hash = label ? encodeURIComponent(label) : "";
+    setSelected(label);
+    const url = label ? `#${encodeURIComponent(label)}` : window.location.pathname + window.location.search;
+    window.history.pushState(null, "", url);
     window.scrollTo({ top: 0 });
   };
   return [selected, open];
