@@ -52,25 +52,21 @@ const STEPS = [
     icon: FileSearchIcon,
     title: "Read the file twice",
     text: "Once as a person sees the page, once as an AI extracts it. Anything only the machine can read is flagged and classified.",
-    endpoints: ["/injection", "/decide"],
   },
   {
     icon: IncognitoIcon,
     title: "Score it blind",
     text: "Name, contact, age and location are removed. Each requirement is judged on the visible resume, with the passage that proves it.",
-    endpoints: ["/pii", "/extract", "/rerank", "/decide"],
   },
   {
     icon: CheckListIcon,
     title: "Check the story",
     text: "Claims are verified against references, the resume against the cover letter and other applicants, and take-home code before it runs.",
-    endpoints: ["/grounding", "/compare", "/script"],
   },
   {
     icon: NoteEditIcon,
     title: "Hand over a scorecard",
     text: "A next step, the reasons behind it, and interview questions aimed at what couldn’t be verified. A person makes the call.",
-    endpoints: ["/fill"],
   },
 ];
 
@@ -91,13 +87,6 @@ export function HowItWorks() {
             </div>
             <h3 className="mt-4 text-[18px] font-extrabold text-brand-900">{s.title}</h3>
             <p className="mt-2 text-[15px] leading-relaxed text-ink-500">{s.text}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {s.endpoints.map((e) => (
-                <span key={e} className="pill pill-neutre normal-case">
-                  {e}
-                </span>
-              ))}
-            </div>
           </li>
         ))}
       </ol>
