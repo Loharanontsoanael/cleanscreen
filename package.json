@@ -30,5 +30,6 @@
     "tsx": "^4.23.15",
     "typescript": "^5"
   },
-  "type": "module"
+  "type": "module",
+  "license": "AGPL-3.0-only"
 }

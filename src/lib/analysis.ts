@@ -1,7 +1,7 @@
 import "server-only";
 import type { ChoiceAnswer, CompareFinding, ComparePair, ExtractedField } from "clocked-sdk";
 import { callClocked, type CallRecord } from "./clocked";
-import { analysePdf } from "./forensics";
+import { analysePdf, type PdfForensics } from "./forensics";
 import type {
   CandidateInput,
   CandidateReport,
@@ -110,22 +110,13 @@ function resumeClaims(visibleText: string): string[] {
 const listValues = (field: ExtractedField | undefined): string[] =>
   Array.isArray(field?.value) ? (field.value as unknown[]).filter((v): v is string => typeof v === "string") : [];
 
-async function analyseCandidate(
-  job: JobInput,
-  input: CandidateInput,
-  label: string,
-  emit: Emit,
-): Promise<CandidateReport> {
-  const trail: CallRecord[] = [];
-  const step = (name: string) => emit({ type: "step", candidate: label, step: name });
-
-  step("Reading the PDF the way a person and a machine do");
-  const pdf = analysePdf(input.resumePdf);
-
-  // Stage 1: everything that only needs the raw file runs in parallel.
-  step("Screening for manipulation and personal data");
+/**
+ * The manipulation check on its own: instructions aimed at the AI screener anywhere in the
+ * machine-readable text, and what each piece of hidden text is for. Also used by the benchmark.
+ */
+export async function checkManipulation(pdf: PdfForensics, trail: CallRecord[]) {
   const hiddenDocs = pdf.hidden.map((h, i) => ({ id: `hidden-${i}`, text: h.text }));
-  const [injection, hiddenIntent, pii, code] = await Promise.all([
+  const [injection, hiddenIntent] = await Promise.all([
     callClocked(
       "injection",
       {
@@ -156,8 +147,10 @@ async function analyseCandidate(
                   instructions: "What is this hidden text trying to do?",
                   criteria: {
                     instruction_to_ai: "It gives instructions to an automated or AI screener, for example to rank, score or recommend the applicant.",
-                    keyword_stuffing: "It lists skills, job titles or experience claims so that keyword matching scores the applicant higher.",
-                    benign: "It is formatting, layout or document metadata with no effect on screening.",
+                    keyword_stuffing:
+                      "It lists specific skills, tools, job titles or experience claims so that keyword matching scores the applicant higher.",
+                    benign:
+                      "It describes the document itself (a title, the word resume or CV, a name, an author or the tool that made it), or is formatting, with no skills or experience claims.",
                   },
                 },
               ]),
@@ -167,6 +160,26 @@ async function analyseCandidate(
           trail,
         )
       : null,
+  ]);
+  return { injection, hiddenIntent };
+}
+
+async function analyseCandidate(
+  job: JobInput,
+  input: CandidateInput,
+  label: string,
+  emit: Emit,
+): Promise<CandidateReport> {
+  const trail: CallRecord[] = [];
+  const step = (name: string) => emit({ type: "step", candidate: label, step: name });
+
+  step("Reading the PDF the way a person and a machine do");
+  const pdf = analysePdf(input.resumePdf);
+
+  // Stage 1: everything that only needs the raw file runs in parallel.
+  step("Screening for manipulation and personal data");
+  const [{ injection, hiddenIntent }, pii, code] = await Promise.all([
+    checkManipulation(pdf, trail),
     callClocked(
       "pii",
       {

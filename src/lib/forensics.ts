@@ -45,6 +45,10 @@ const RENDER_SCALE = 2;
 const TINY_FONT_PT = 4;
 const MIN_INK_RATIO = 0.01;
 const META_KEYS = ["Title", "Author", "Subject", "Keywords", "Creator", "Producer"];
+/** Words that only say what the document is. */
+const DOCUMENT_WORDS = new Set(["resume", "résumé", "cv", "curriculum", "vitae", "document", "profile", "portfolio", "of", "the", "and"]);
+
+const words = (t: string) => t.toLowerCase().match(/[\p{L}\p{N}+#.]+/gu)?.map((w) => w.replace(/\.$/, "")) ?? [];
 
 type Rect = [number, number, number, number];
 
@@ -173,12 +177,15 @@ export function analysePdf(bytes: Uint8Array): PdfForensics {
       previous = r;
     }
     // Subject and Keywords are author-controlled free text that people never see; a title is
-    // usually just the document name, so only an unusually long one is worth reading.
+    // usually just the document name, so only an unusually long one is worth reading. Metadata
+    // that only names the document ("Curriculum vitae", "resume, cv") or repeats words from the
+    // page adds nothing a reader can't see, so it is left out.
+    const pageWords = new Set(words(runs.filter((r) => !r.hidden).map((r) => r.text).join(" ")));
     for (const key of ["Subject", "Keywords", "Title"]) {
       const value = metadata[key];
-      if (value && (key !== "Title" || value.length > 80)) {
-        hidden.push({ reason: "metadata", page: null, text: `${key}: ${value}` });
-      }
+      if (!value || (key === "Title" && value.length <= 80)) continue;
+      const novel = words(value).filter((w) => !pageWords.has(w) && !DOCUMENT_WORDS.has(w));
+      if (novel.length) hidden.push({ reason: "metadata", page: null, text: `${key}: ${value}` });
     }
 
     const join = (rs: TextRun[]) =>

@@ -55,6 +55,21 @@ Detection is visual, not a list of tricks. Each PDF page is rendered with MuPDF 
 
 On a real two-page resume this produced no false alarm: the visible and the machine-readable text were identical.
 
+## Benchmark
+
+`scripts/benchmark.ts` generates 40 resumes and runs each through the same manipulation check the app uses (PDF forensics, then `/injection` and `/decide`).
+
+- **30 attacks:** nine ways of hiding text (white, near-white, 1 pt, 3 pt, off the page, invisible render mode, covered by a shape, PDF Subject, PDF Keywords), each carrying three payloads (an instruction to the AI, keyword stuffing, a fake senior role), plus three instructions printed in plain sight.
+- **10 honest resumes built to look suspicious:** a dark sidebar with white text, light grey dates, a 7 pt footer, a coloured header band, ordinary "Curriculum vitae" metadata, two pages, and resumes that mention prompt engineering and prompt-injection red-teaming as skills.
+
+| | Result |
+| --- | --- |
+| Attacks caught | **30 / 30** |
+| False alarms on honest resumes | **0 / 10** |
+| Cost of the whole run | 69 Clocked calls, about 150 credits |
+
+The first run raised two false alarms: ordinary metadata such as "Subject: Curriculum vitae" was read as keyword stuffing. Metadata that only names the document or repeats words from the page is now ignored; real metadata attacks are still caught. Per-case results are in `data/benchmark/results.json`. Re-run with `node --env-file=.env.local --conditions=react-server --import tsx scripts/benchmark.ts`.
+
 ## The demo round
 
 Ten fictional applicants for a Senior Data Engineer role, each with a different situation:
@@ -112,6 +127,9 @@ npm run dev                    # http://localhost:3000
 - Verification checks a claim against the records supplied, not against the outside world. A claim the records don't mention is "not covered", never "false".
 - The resume layout on the applicant page is rebuilt from the PDF text; very free-form designs can put a subheading in the wrong place. Detection does not depend on it.
 
-## Credits
+## License and credits
+
+CleanScreen is released under the [GNU Affero General Public License v3.0](LICENSE), the license of the MuPDF library it builds on.
+
 
 Built with [Next.js](https://nextjs.org), [Clocked](https://clocked.rezolve.ai) and its [JavaScript SDK](https://www.npmjs.com/package/clocked-sdk), [MuPDF.js](https://mupdf.com) (AGPL-3.0) for PDF rendering and text positions, [pdf-lib](https://pdf-lib.js.org) for the demo PDFs, [Hugeicons](https://hugeicons.com), and the DM Sans, JetBrains Mono, Caveat and Lato typefaces. Statistics are linked to their sources above. Built with the help of Claude Code.
