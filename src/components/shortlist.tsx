@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { CandidateReport, RoundReport } from "@/lib/types";
-import { glyph } from "./glyph";
 import { isCopied, verdictOf } from "./verdict";
 
 /** Raw-file score minus visible-resume score above which the gap is called out. */
@@ -33,65 +31,78 @@ export function useSelectedApplicant(): [string | null, (label: string | null) =
   return [selected, open];
 }
 
-const GROUPS: { outcome: CandidateReport["decision"]["outcome"]; title: string; tone: string }[] = [
-  { outcome: "advance", title: "Ready for interview", tone: "text-pass bg-pass-soft" },
-  { outcome: "human_review", title: "Worth a closer look", tone: "text-hold bg-hold-soft" },
-  { outcome: "flagged", title: "Needs a person to check", tone: "text-alerte bg-alerte-soft" },
-  { outcome: "reject", title: "Not a match", tone: "text-ink-500 bg-ink-100" },
-];
+const ORDER: CandidateReport["decision"]["outcome"][] = ["advance", "human_review", "flagged", "reject"];
 
-/** Applicants grouped by next step, one plain sentence each. */
+const STAMP_TONE: Record<CandidateReport["decision"]["outcome"], string> = {
+  advance: "text-brand-900",
+  human_review: "text-brand-600",
+  flagged: "text-brand-600",
+  reject: "text-ink-300",
+};
+
+/** Line widths (45–94%) that vary per applicant, so the sheets don't all look alike. */
+function lineWidths(seed: string, count: number): number[] {
+  let h = [...seed].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  const out: number[] = [];
+  for (let i = 0; i < count; i++) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    out.push(45 + (h % 50));
+  }
+  return out;
+}
+
+/** Grey lines standing in for resume text. */
+function SheetLines({ seed }: { seed: string }) {
+  return (
+    <>
+      <span className="block h-2 w-[55%] rounded-[3px] bg-brand-900/85" />
+      <span className="mt-1.5 mb-4 block h-1.5 w-[35%] rounded-[3px] bg-ink-200" />
+      {lineWidths(seed, 9).map((w, i) => (
+        <span key={i} className="mt-2 block h-1 rounded-[3px] bg-ink-100" style={{ width: `${w}%` }} />
+      ))}
+    </>
+  );
+}
+
+/** Each application as a small resume sheet, stamped with what to do next. */
 export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (label: string) => void }) {
   const credits = report.trail.reduce((s, t) => s + (t.credits ?? 0), 0);
+  const rows = [...report.candidates].sort(
+    (a, b) => ORDER.indexOf(a.decision.outcome) - ORDER.indexOf(b.decision.outcome) || b.score - a.score,
+  );
   return (
-    <div className="mt-8 space-y-10">
-      {GROUPS.map((g) => {
-        const rows = report.candidates.filter((c) => c.decision.outcome === g.outcome).sort((a, b) => b.score - a.score);
-        if (!rows.length) return null;
-        return (
-          <section key={g.outcome}>
-            <h3 className="flex items-baseline gap-2 text-[17px] font-extrabold text-brand-900">
-              {g.title}
-              <span className="text-[15px] font-semibold text-ink-400">{rows.length}</span>
-            </h3>
-            <ul className="mt-3 divide-y divide-rule-soft border-y-[1.5px] border-rule">
-              {rows.map((c) => {
-                const v = verdictOf(c, isCopied(c, report.duplicates));
-                const inflated = c.naiveScore - c.score >= INFLATION_GAP;
-                return (
-                  <li key={c.label}>
-                    <button
-                      onClick={() => onOpen(c.label)}
-                      className="group flex w-full items-center gap-4 px-1 py-4 text-left hover:bg-rail sm:px-3"
-                    >
-                      <span className={`grid size-11 shrink-0 place-items-center rounded-full ${g.tone}`}>{glyph(v.icon, 20, 1.8)}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[16px] font-extrabold text-brand-900">
-                          {c.label}
-                          <span className="ml-2 text-[13px] font-medium text-ink-400">{c.scorecard.seniority}</span>
-                        </span>
-                        <span className="block text-[15px] text-ink-500">{v.sentence}</span>
-                      </span>
-                      {inflated && (
-                        <span className="hidden shrink-0 rounded-full bg-brand-50 px-3 py-1 text-[13px] font-semibold text-brand-700 md:inline">
-                          An AI would have said {c.naiveScore}
-                        </span>
-                      )}
-                      <span className="w-14 shrink-0 text-right">
-                        <span className="figure text-[22px]">{c.score}</span>
-                        <span className="block text-[11px] font-semibold text-ink-400">fit</span>
-                      </span>
-                      <span className="shrink-0 text-ink-300 group-hover:text-brand-600">{glyph(ArrowRight01Icon, 18, 2)}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        );
-      })}
-      <p className="text-[13px] text-ink-400">
-        {report.candidates.length} applicants screened with {credits.toLocaleString()} Clocked credits.
+    <div className="mt-8">
+      <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+        {rows.map((c) => {
+          const v = verdictOf(c, isCopied(c, report.duplicates));
+          const inflated = c.naiveScore - c.score >= INFLATION_GAP;
+          return (
+            <li key={c.label}>
+              <button onClick={() => onOpen(c.label)} className="group block w-full text-left">
+                <span className="relative block aspect-[210/297] overflow-hidden rounded-[4px] border border-ink-100 bg-white px-[9%] py-[10%] shadow-[0_1px_2px_rgb(15_27_45/0.08),0_14px_30px_-14px_rgb(15_27_45/0.35)] transition-transform duration-150 group-hover:-translate-y-1 group-hover:-rotate-1">
+                  <SheetLines seed={c.label} />
+                  <span
+                    className={`absolute top-[58%] left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] rounded-[6px] border-[3px] border-current bg-white/75 px-2.5 py-1 font-mono text-[12px] font-extrabold tracking-[0.08em] whitespace-nowrap uppercase shadow-[inset_0_0_0_1px_currentColor] mix-blend-multiply sm:text-[13px] ${STAMP_TONE[c.decision.outcome]}`}
+                  >
+                    {v.stamp}
+                  </span>
+                </span>
+                <span className="mt-3 flex items-baseline justify-between gap-2">
+                  <span className="text-[15px] font-extrabold whitespace-nowrap text-brand-900 group-hover:text-brand-600">{c.label}</span>
+                  <span className="figure text-[18px]">{c.score}</span>
+                </span>
+                <span className="block text-[12.5px] font-medium text-ink-400">{c.scorecard.seniority}</span>
+                <span className="mt-1 block text-[13.5px] leading-snug text-ink-500">{v.sentence}</span>
+                {inflated && (
+                  <span className="mt-1.5 block text-[12.5px] font-semibold text-brand-600">An AI reading the file: {c.naiveScore}</span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-8 text-[13px] text-ink-400">
+        {report.candidates.length} applicant{report.candidates.length > 1 ? "s" : ""} screened with {credits.toLocaleString()} Clocked credits.
       </p>
     </div>
   );
