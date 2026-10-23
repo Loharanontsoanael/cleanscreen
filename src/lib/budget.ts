@@ -7,6 +7,8 @@
 
 /** Measured at about 66 credits per resume (README, Cost); reserved with headroom. */
 export const CREDITS_PER_RESUME = 100;
+/** A blind copy or an evidence PDF: one PDF call, measured at 2 to 8 credits. */
+export const CREDITS_PER_DOCUMENT = 15;
 
 export class CreditBudget {
   private day = "";
@@ -44,3 +46,6 @@ export class CreditBudget {
     return Math.max(0, this.perDay - this.spent);
   }
 }
+
+/** The one budget every live request draws on. */
+export const liveBudget = new CreditBudget(Number(process.env.DAILY_CREDIT_BUDGET ?? 3000));

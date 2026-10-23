@@ -32,7 +32,7 @@
       }
     ]
   },
-  "generatedAt": "2026-10-23T09:12:10.932Z",
+  "generatedAt": "2026-10-23T10:08:42.090Z",
   "candidates": [
     {
       "id": "amara-okafor",
@@ -432,11 +432,11 @@
       "unchecked": [],
       "trail": [
         {
-          "endpoint": "pii",
-          "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
-          "modelMs": 188.357025,
-          "credits": 8,
-          "costUsd": 0.001594,
+          "endpoint": "script",
+          "purpose": "Inspect the take-home submission before the grader runs it",
+          "modelMs": 69.240479,
+          "credits": 3,
+          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -448,9 +448,17 @@
           "cached": true
         },
         {
-          "endpoint": "script",
-          "purpose": "Inspect the take-home submission before the grader runs it",
-          "modelMs": 69.240479,
+          "endpoint": "pii",
+          "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
+          "modelMs": 188.357025,
+          "credits": 8,
+          "costUsd": 0.001594,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 50.771297,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -464,33 +472,9 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 50.771297,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 240.754303,
-          "credits": 10,
-          "costUsd": 0.001992,
-          "cached": true
-        },
-        {
           "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
           "modelMs": 76.915009,
-          "credits": 4,
-          "costUsd": 0.000797,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 77.836067,
           "credits": 4,
           "costUsd": 0.000797,
           "cached": true
@@ -509,6 +493,22 @@
           "modelMs": 77.192703,
           "credits": 4,
           "costUsd": 0.000797,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 77.836067,
+          "credits": 4,
+          "costUsd": 0.000797,
+          "cached": true
+        },
+        {
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 240.754303,
+          "credits": 10,
+          "costUsd": 0.001992,
           "cached": true
         },
         {
@@ -542,8 +542,28 @@
           "credits": 26,
           "costUsd": 0.005179,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 28.669855,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 193.49501,
+          "credits": 8,
+          "costUsd": 0.001594,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/amara-okafor-blind.pdf",
+        "evidence": "/demo/amara-okafor-evidence.pdf"
+      }
     },
     {
       "id": "lucas-bernard",
@@ -804,14 +824,6 @@
       "unchecked": [],
       "trail": [
         {
-          "endpoint": "decide",
-          "purpose": "Classify what each piece of hidden text is trying to do",
-          "modelMs": 21.709215,
-          "credits": 1,
-          "costUsd": 0.000199,
-          "cached": true
-        },
-        {
           "endpoint": "injection",
           "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
           "modelMs": 27.034143,
@@ -825,6 +837,14 @@
           "modelMs": 165.136261,
           "credits": 7,
           "costUsd": 0.001394,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Classify what each piece of hidden text is trying to do",
+          "modelMs": 21.709215,
+          "credits": 1,
+          "costUsd": 0.000199,
           "cached": true
         },
         {
@@ -844,6 +864,14 @@
           "cached": true
         },
         {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 44.629375,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
           "endpoint": "extract",
           "purpose": "Read roles, skills, education and certifications verbatim",
           "modelMs": 226.37738,
@@ -853,16 +881,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 44.629375,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 42.754559,
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 42.438656,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -877,8 +897,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 42.438656,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 42.754559,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -898,8 +918,28 @@
           "credits": 22,
           "costUsd": 0.004382,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 28.569792,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 167.210617,
+          "credits": 7,
+          "costUsd": 0.001394,
+          "cached": true
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/lucas-bernard-blind.pdf",
+        "evidence": "/demo/lucas-bernard-evidence.pdf"
+      }
     },
     {
       "id": "priya-raman",
@@ -1147,6 +1187,14 @@
       "unchecked": [],
       "trail": [
         {
+          "endpoint": "decide",
+          "purpose": "Classify what each piece of hidden text is trying to do",
+          "modelMs": 20.862047,
+          "credits": 1,
+          "costUsd": 0.000199,
+          "cached": true
+        },
+        {
           "endpoint": "injection",
           "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
           "modelMs": 192.721767,
@@ -1160,14 +1208,6 @@
           "modelMs": 103.883965,
           "credits": 5,
           "costUsd": 0.000996,
-          "cached": true
-        },
-        {
-          "endpoint": "decide",
-          "purpose": "Classify what each piece of hidden text is trying to do",
-          "modelMs": 20.862047,
-          "credits": 1,
-          "costUsd": 0.000199,
           "cached": true
         },
         {
@@ -1204,24 +1244,8 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 42.682369,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
           "modelMs": 42.943199,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 42.192352,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -1235,14 +1259,50 @@
           "cached": true
         },
         {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 42.682369,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 42.192352,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
           "modelMs": 387.475552,
           "credits": 16,
           "costUsd": 0.003187,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 185.189408,
+          "credits": 8,
+          "costUsd": 0.001594,
+          "cached": true
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 107.322624,
+          "credits": 5,
+          "costUsd": 0.000996,
+          "cached": true
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/priya-raman-blind.pdf",
+        "evidence": "/demo/priya-raman-evidence.pdf"
+      }
     },
     {
       "id": "tomasz-kowalski",
@@ -1519,6 +1579,14 @@
       "unchecked": [],
       "trail": [
         {
+          "endpoint": "injection",
+          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+          "modelMs": 196.020409,
+          "credits": 8,
+          "costUsd": 0.001594,
+          "cached": true
+        },
+        {
           "endpoint": "pii",
           "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
           "modelMs": 247.400925,
@@ -1535,33 +1603,9 @@
           "cached": true
         },
         {
-          "endpoint": "injection",
-          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-          "modelMs": 196.020409,
-          "credits": 8,
-          "costUsd": 0.001594,
-          "cached": true
-        },
-        {
           "endpoint": "decide",
           "purpose": "Judge each job requirement on the blind visible resume",
           "modelMs": 59.91568,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 60.386433,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 54.792416,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -1576,8 +1620,16 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 54.418335,
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 54.792416,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 60.386433,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -1592,6 +1644,14 @@
         },
         {
           "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+          "modelMs": 43.246494,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": true
+        },
+        {
+          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
           "modelMs": 54.76413,
           "credits": 3,
@@ -1600,10 +1660,10 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-          "modelMs": 43.246494,
-          "credits": 2,
-          "costUsd": 0.000398,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 54.418335,
+          "credits": 3,
+          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -1613,8 +1673,28 @@
           "credits": 15,
           "costUsd": 0.002988,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 32.664673,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 173.47757,
+          "credits": 7,
+          "costUsd": 0.001394,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/tomasz-kowalski-blind.pdf",
+        "evidence": "/demo/tomasz-kowalski-evidence.pdf"
+      }
     },
     {
       "id": "hannah-weiss",
@@ -1977,14 +2057,6 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Judge each job requirement on the blind visible resume",
-          "modelMs": 59.735073,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
           "endpoint": "extract",
           "purpose": "Read roles, skills, education and certifications verbatim",
           "modelMs": 241.246017,
@@ -1993,17 +2065,25 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 59.821857,
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 55.093922,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 55.093922,
+          "endpoint": "decide",
+          "purpose": "Judge each job requirement on the blind visible resume",
+          "modelMs": 59.735073,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 59.821857,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -2055,8 +2135,28 @@
           "credits": 19,
           "costUsd": 0.003785,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 27.476608,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 162.952377,
+          "credits": 7,
+          "costUsd": 0.001394,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/hannah-weiss-blind.pdf",
+        "evidence": "/demo/hannah-weiss-evidence.pdf"
+      }
     },
     {
       "id": "kevin-mendes",
@@ -2273,19 +2373,19 @@
       "unchecked": [],
       "trail": [
         {
-          "endpoint": "injection",
-          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-          "modelMs": 31.528959,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
           "endpoint": "pii",
           "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
           "modelMs": 152.668732,
           "credits": 7,
           "costUsd": 0.001394,
+          "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+          "modelMs": 31.528959,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -2359,8 +2459,28 @@
           "credits": 13,
           "costUsd": 0.00259,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 33.646496,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 161.735992,
+          "credits": 7,
+          "costUsd": 0.001394,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/kevin-mendes-blind.pdf",
+        "evidence": "/demo/kevin-mendes-evidence.pdf"
+      }
     },
     {
       "id": "jordan-blake",
@@ -2593,6 +2713,22 @@
           "cached": true
         },
         {
+          "endpoint": "decide",
+          "purpose": "Judge each job requirement on the blind visible resume",
+          "modelMs": 59.67997,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 60.169376,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
           "endpoint": "extract",
           "purpose": "Read roles, skills, education and certifications verbatim",
           "modelMs": 233.488541,
@@ -2617,19 +2753,11 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 60.169376,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "decide",
-          "purpose": "Judge each job requirement on the blind visible resume",
-          "modelMs": 59.67997,
-          "credits": 3,
-          "costUsd": 0.000598,
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+          "modelMs": 42.63187,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -2649,22 +2777,34 @@
           "cached": true
         },
         {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-          "modelMs": 42.63187,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
           "modelMs": 277.746337,
           "credits": 12,
           "costUsd": 0.00239,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 33.341183,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 109.467201,
+          "credits": 5,
+          "costUsd": 0.000996,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/jordan-blake-blind.pdf",
+        "evidence": "/demo/jordan-blake-evidence.pdf"
+      }
     },
     {
       "id": "sofia-marin",
@@ -2938,19 +3078,19 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Judge each job requirement on the blind visible resume",
-          "modelMs": 60.683872,
-          "credits": 3,
-          "costUsd": 0.000598,
+          "endpoint": "extract",
+          "purpose": "Read roles, skills, education and certifications verbatim",
+          "modelMs": 251.753082,
+          "credits": 11,
+          "costUsd": 0.002191,
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 59.886559,
-          "credits": 3,
-          "costUsd": 0.000598,
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 46.094688,
+          "credits": 2,
+          "costUsd": 0.000398,
           "cached": true
         },
         {
@@ -2970,17 +3110,25 @@
           "cached": true
         },
         {
-          "endpoint": "extract",
-          "purpose": "Read roles, skills, education and certifications verbatim",
-          "modelMs": 251.753082,
-          "credits": 11,
-          "costUsd": 0.002191,
+          "endpoint": "decide",
+          "purpose": "Judge each job requirement on the blind visible resume",
+          "modelMs": 60.683872,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 59.886559,
+          "credits": 3,
+          "costUsd": 0.000598,
           "cached": true
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 46.094688,
+          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+          "modelMs": 43.133087,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -2989,14 +3137,6 @@
           "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
           "modelMs": 43.122398,
-          "credits": 2,
-          "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-          "modelMs": 43.133087,
           "credits": 2,
           "costUsd": 0.000398,
           "cached": true
@@ -3016,8 +3156,28 @@
           "credits": 22,
           "costUsd": 0.004382,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 26.6024,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 153.694275,
+          "credits": 7,
+          "costUsd": 0.001394,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/sofia-marin-blind.pdf",
+        "evidence": "/demo/sofia-marin-evidence.pdf"
+      }
     },
     {
       "id": "daniel-cho",
@@ -3344,9 +3504,9 @@
           "cached": true
         },
         {
-          "endpoint": "decide",
-          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-          "modelMs": 59.904224,
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+          "modelMs": 55.067295,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -3361,16 +3521,24 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-          "modelMs": 55.067295,
+          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+          "modelMs": 54.887489,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
+          "endpoint": "decide",
+          "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+          "modelMs": 59.904224,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-          "modelMs": 54.887489,
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 53.942463,
           "credits": 3,
           "costUsd": 0.000598,
           "cached": true
@@ -3381,14 +3549,6 @@
           "modelMs": 43.935009,
           "credits": 2,
           "costUsd": 0.000398,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 53.942463,
-          "credits": 3,
-          "costUsd": 0.000598,
           "cached": true
         },
         {
@@ -3406,8 +3566,28 @@
           "credits": 15,
           "costUsd": 0.002988,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 27.529247,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 97.566109,
+          "credits": 4,
+          "costUsd": 0.000797,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/daniel-cho-blind.pdf",
+        "evidence": "/demo/daniel-cho-evidence.pdf"
+      }
     },
     {
       "id": "ines-haddad",
@@ -3803,14 +3983,6 @@
         },
         {
           "endpoint": "rerank",
-          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-          "modelMs": 53.337887,
-          "credits": 3,
-          "costUsd": 0.000598,
-          "cached": true
-        },
-        {
-          "endpoint": "rerank",
           "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
           "modelMs": 53.050785,
           "credits": 3,
@@ -3826,14 +3998,42 @@
           "cached": true
         },
         {
+          "endpoint": "rerank",
+          "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+          "modelMs": 53.337887,
+          "credits": 3,
+          "costUsd": 0.000598,
+          "cached": true
+        },
+        {
           "endpoint": "fill",
           "purpose": "Fill the hiring scorecard and targeted interview questions",
           "modelMs": 508.268575,
           "credits": 21,
           "costUsd": 0.004183,
           "cached": true
+        },
+        {
+          "endpoint": "injection",
+          "purpose": "Box instructions aimed at the AI screener in the PDF",
+          "modelMs": 28.352224,
+          "credits": 2,
+          "costUsd": 0.000398,
+          "cached": false
+        },
+        {
+          "endpoint": "pii",
+          "purpose": "Redact identity in the PDF for a blind copy",
+          "modelMs": 190.806717,
+          "credits": 8,
+          "costUsd": 0.001594,
+          "cached": false
         }
-      ]
+      ],
+      "documents": {
+        "blind": "/demo/ines-haddad-blind.pdf",
+        "evidence": "/demo/ines-haddad-evidence.pdf"
+      }
     }
   ],
   "failed": [],
@@ -3854,11 +4054,11 @@
   ],
   "trail": [
     {
-      "endpoint": "pii",
-      "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
-      "modelMs": 188.357025,
-      "credits": 8,
-      "costUsd": 0.001594,
+      "endpoint": "script",
+      "purpose": "Inspect the take-home submission before the grader runs it",
+      "modelMs": 69.240479,
+      "credits": 3,
+      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -3870,9 +4070,17 @@
       "cached": true
     },
     {
-      "endpoint": "script",
-      "purpose": "Inspect the take-home submission before the grader runs it",
-      "modelMs": 69.240479,
+      "endpoint": "pii",
+      "purpose": "Remove identity and protected characteristics before any scoring (blind screening)",
+      "modelMs": 188.357025,
+      "credits": 8,
+      "costUsd": 0.001594,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 50.771297,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -3886,33 +4094,9 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 50.771297,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "extract",
-      "purpose": "Read roles, skills, education and certifications verbatim",
-      "modelMs": 240.754303,
-      "credits": 10,
-      "costUsd": 0.001992,
-      "cached": true
-    },
-    {
       "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
       "modelMs": 76.915009,
-      "credits": 4,
-      "costUsd": 0.000797,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 77.836067,
       "credits": 4,
       "costUsd": 0.000797,
       "cached": true
@@ -3931,6 +4115,22 @@
       "modelMs": 77.192703,
       "credits": 4,
       "costUsd": 0.000797,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 77.836067,
+      "credits": 4,
+      "costUsd": 0.000797,
+      "cached": true
+    },
+    {
+      "endpoint": "extract",
+      "purpose": "Read roles, skills, education and certifications verbatim",
+      "modelMs": 240.754303,
+      "credits": 10,
+      "costUsd": 0.001992,
       "cached": true
     },
     {
@@ -3966,12 +4166,20 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Classify what each piece of hidden text is trying to do",
-      "modelMs": 21.709215,
-      "credits": 1,
-      "costUsd": 0.000199,
-      "cached": true
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 28.669855,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 193.49501,
+      "credits": 8,
+      "costUsd": 0.001594,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -3991,6 +4199,14 @@
     },
     {
       "endpoint": "decide",
+      "purpose": "Classify what each piece of hidden text is trying to do",
+      "modelMs": 21.709215,
+      "credits": 1,
+      "costUsd": 0.000199,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
       "purpose": "Judge each job requirement on the blind visible resume",
       "modelMs": 58.784672,
       "credits": 3,
@@ -4006,6 +4222,14 @@
       "cached": true
     },
     {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 44.629375,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
       "endpoint": "extract",
       "purpose": "Read roles, skills, education and certifications verbatim",
       "modelMs": 226.37738,
@@ -4015,16 +4239,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 44.629375,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 42.754559,
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 42.438656,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4039,8 +4255,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 42.438656,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 42.754559,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4063,6 +4279,30 @@
     },
     {
       "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 28.569792,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 167.210617,
+      "credits": 7,
+      "costUsd": 0.001394,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Classify what each piece of hidden text is trying to do",
+      "modelMs": 20.862047,
+      "credits": 1,
+      "costUsd": 0.000199,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
       "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
       "modelMs": 192.721767,
       "credits": 8,
@@ -4075,14 +4315,6 @@
       "modelMs": 103.883965,
       "credits": 5,
       "costUsd": 0.000996,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Classify what each piece of hidden text is trying to do",
-      "modelMs": 20.862047,
-      "credits": 1,
-      "costUsd": 0.000199,
       "cached": true
     },
     {
@@ -4119,24 +4351,8 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 42.682369,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
       "modelMs": 42.943199,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
-      "modelMs": 42.192352,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4150,11 +4366,51 @@
       "cached": true
     },
     {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 42.682369,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
+      "modelMs": 42.192352,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
       "modelMs": 387.475552,
       "credits": 16,
       "costUsd": 0.003187,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 185.189408,
+      "credits": 8,
+      "costUsd": 0.001594,
+      "cached": true
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 107.322624,
+      "credits": 5,
+      "costUsd": 0.000996,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+      "modelMs": 196.020409,
+      "credits": 8,
+      "costUsd": 0.001594,
       "cached": true
     },
     {
@@ -4174,33 +4430,9 @@
       "cached": true
     },
     {
-      "endpoint": "injection",
-      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-      "modelMs": 196.020409,
-      "credits": 8,
-      "costUsd": 0.001594,
-      "cached": true
-    },
-    {
       "endpoint": "decide",
       "purpose": "Judge each job requirement on the blind visible resume",
       "modelMs": 59.91568,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 60.386433,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 54.792416,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4215,8 +4447,16 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 54.418335,
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 54.792416,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 60.386433,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4231,6 +4471,14 @@
     },
     {
       "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 43.246494,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
       "modelMs": 54.76413,
       "credits": 3,
@@ -4239,10 +4487,10 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 43.246494,
-      "credits": 2,
-      "costUsd": 0.000398,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 54.418335,
+      "credits": 3,
+      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4252,6 +4500,22 @@
       "credits": 15,
       "costUsd": 0.002988,
       "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 32.664673,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 173.47757,
+      "credits": 7,
+      "costUsd": 0.001394,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4270,14 +4534,6 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Judge each job requirement on the blind visible resume",
-      "modelMs": 59.735073,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
       "endpoint": "extract",
       "purpose": "Read roles, skills, education and certifications verbatim",
       "modelMs": 241.246017,
@@ -4286,17 +4542,25 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 59.821857,
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 55.093922,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 55.093922,
+      "endpoint": "decide",
+      "purpose": "Judge each job requirement on the blind visible resume",
+      "modelMs": 59.735073,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 59.821857,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4351,11 +4615,19 @@
     },
     {
       "endpoint": "injection",
-      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
-      "modelMs": 31.528959,
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 27.476608,
       "credits": 2,
       "costUsd": 0.000398,
-      "cached": true
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 162.952377,
+      "credits": 7,
+      "costUsd": 0.001394,
+      "cached": false
     },
     {
       "endpoint": "pii",
@@ -4363,6 +4635,14 @@
       "modelMs": 152.668732,
       "credits": 7,
       "costUsd": 0.001394,
+      "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
+      "modelMs": 31.528959,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4439,6 +4719,22 @@
     },
     {
       "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 33.646496,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 161.735992,
+      "credits": 7,
+      "costUsd": 0.001394,
+      "cached": false
+    },
+    {
+      "endpoint": "injection",
       "purpose": "Detect instructions aimed at the AI screener anywhere in the machine-readable text",
       "modelMs": 31.25536,
       "credits": 2,
@@ -4451,6 +4747,22 @@
       "modelMs": 104.215904,
       "credits": 5,
       "costUsd": 0.000996,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Judge each job requirement on the blind visible resume",
+      "modelMs": 59.67997,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 60.169376,
+      "credits": 3,
+      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4478,19 +4790,11 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 60.169376,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Judge each job requirement on the blind visible resume",
-      "modelMs": 59.67997,
-      "credits": 3,
-      "costUsd": 0.000598,
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 42.63187,
+      "credits": 2,
+      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4510,20 +4814,28 @@
       "cached": true
     },
     {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 42.63187,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
       "modelMs": 277.746337,
       "credits": 12,
       "costUsd": 0.00239,
       "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 33.341183,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 109.467201,
+      "credits": 5,
+      "costUsd": 0.000996,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4539,38 +4851,6 @@
       "modelMs": 146.541122,
       "credits": 6,
       "costUsd": 0.001195,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Judge each job requirement on the blind visible resume",
-      "modelMs": 60.683872,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 59.886559,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 43.152447,
-      "credits": 2,
-      "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
-      "modelMs": 42.299648,
-      "credits": 2,
-      "costUsd": 0.000398,
       "cached": true
     },
     {
@@ -4591,16 +4871,48 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 43.122398,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 43.152447,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
     },
     {
       "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Built and operated data pipelines with Airflow, Spark or Kafka\"",
+      "modelMs": 42.299648,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Judge each job requirement on the blind visible resume",
+      "modelMs": 60.683872,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 59.886559,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
       "modelMs": 43.133087,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": true
+    },
+    {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 43.122398,
       "credits": 2,
       "costUsd": 0.000398,
       "cached": true
@@ -4620,6 +4932,22 @@
       "credits": 22,
       "costUsd": 0.004382,
       "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 26.6024,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 153.694275,
+      "credits": 7,
+      "costUsd": 0.001394,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4654,9 +4982,9 @@
       "cached": true
     },
     {
-      "endpoint": "decide",
-      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
-      "modelMs": 59.904224,
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
+      "modelMs": 55.067295,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4671,16 +4999,24 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"At least 5 years of professional data engineering experience\"",
-      "modelMs": 55.067295,
+      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
+      "modelMs": 54.887489,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
+      "endpoint": "decide",
+      "purpose": "Counterfactual: the same judgment on the raw extracted text a naive screener would read",
+      "modelMs": 59.904224,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Production experience with Python and SQL\"",
-      "modelMs": 54.887489,
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 53.942463,
       "credits": 3,
       "costUsd": 0.000598,
       "cached": true
@@ -4691,14 +5027,6 @@
       "modelMs": 43.935009,
       "credits": 2,
       "costUsd": 0.000398,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 53.942463,
-      "credits": 3,
-      "costUsd": 0.000598,
       "cached": true
     },
     {
@@ -4716,6 +5044,22 @@
       "credits": 15,
       "costUsd": 0.002988,
       "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 27.529247,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 97.566109,
+      "credits": 4,
+      "costUsd": 0.000797,
+      "cached": false
     },
     {
       "endpoint": "injection",
@@ -4783,14 +5127,6 @@
     },
     {
       "endpoint": "rerank",
-      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
-      "modelMs": 53.337887,
-      "credits": 3,
-      "costUsd": 0.000598,
-      "cached": true
-    },
-    {
-      "endpoint": "rerank",
       "purpose": "Find the passages that evidence \"Has led or mentored other engineers\"",
       "modelMs": 53.050785,
       "credits": 3,
@@ -4806,12 +5142,36 @@
       "cached": true
     },
     {
+      "endpoint": "rerank",
+      "purpose": "Find the passages that evidence \"Experience with a cloud data platform such as AWS or GCP\"",
+      "modelMs": 53.337887,
+      "credits": 3,
+      "costUsd": 0.000598,
+      "cached": true
+    },
+    {
       "endpoint": "fill",
       "purpose": "Fill the hiring scorecard and targeted interview questions",
       "modelMs": 508.268575,
       "credits": 21,
       "costUsd": 0.004183,
       "cached": true
+    },
+    {
+      "endpoint": "injection",
+      "purpose": "Box instructions aimed at the AI screener in the PDF",
+      "modelMs": 28.352224,
+      "credits": 2,
+      "costUsd": 0.000398,
+      "cached": false
+    },
+    {
+      "endpoint": "pii",
+      "purpose": "Redact identity in the PDF for a blind copy",
+      "modelMs": 190.806717,
+      "credits": 8,
+      "costUsd": 0.001594,
+      "cached": false
     },
     {
       "endpoint": "compare",

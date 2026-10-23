@@ -2,6 +2,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { analyseRound } from "../src/lib/analysis";
+import { blindCopy, evidenceCopy } from "../src/lib/documents";
 import { renderPagePng } from "../src/lib/forensics";
 import { loadDemoRound } from "../src/lib/demo-data";
 
@@ -16,7 +17,13 @@ await fs.mkdir(pagesDir, { recursive: true });
 for (const [i, c] of report.candidates.entries()) {
   await fs.writeFile(path.join(pagesDir, `${c.id}.png`), renderPagePng(candidates[i].resumePdf));
   c.pageImage = `/demo/${c.id}.png`;
+  // The two downloads, built now so the demo serves them as files. Their calls join the trail.
+  const [blind, evidence] = await Promise.all([blindCopy(candidates[i].resumePdf, c.trail), evidenceCopy(candidates[i].resumePdf, c.trail)]);
+  await fs.writeFile(path.join(pagesDir, `${c.id}-blind.pdf`), blind);
+  await fs.writeFile(path.join(pagesDir, `${c.id}-evidence.pdf`), evidence);
+  c.documents = { blind: `/demo/${c.id}-blind.pdf`, evidence: `/demo/${c.id}-evidence.pdf` };
 }
+report.trail = [...report.candidates.flatMap((c) => c.trail), ...report.trail.filter((t) => !report.candidates.some((c) => c.trail.includes(t)))];
 const out = path.join(process.cwd(), "data", "demo", "report.json");
 await fs.writeFile(out, JSON.stringify(report, null, 2) + "\n");
 const fresh = report.trail.filter((t) => !t.cached);

@@ -73,6 +73,8 @@ export interface CandidateReport {
   pageSizes: { width: number; height: number }[];
   /** Rendered first page of the original PDF, relative to /public. */
   pageImage: string | null;
+  /** Saved copies of the PDF (demo round only; a live round builds them on request). */
+  documents?: { blind: string; evidence: string };
   visibleText: string;
   machineText: string;
   blindText: string;

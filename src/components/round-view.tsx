@@ -13,7 +13,17 @@ export function RoundView({ report }: { report: RoundReport }) {
   const [selected, open] = useSelectedApplicant();
 
   const current = report.candidates.find((c) => c.label === selected);
-  if (current) return <CandidateDetail candidate={current} duplicates={report.duplicates} onBack={() => open(null)} />;
+  if (current) {
+    const saved = current.documents;
+    return (
+      <CandidateDetail
+        candidate={current}
+        duplicates={report.duplicates}
+        onBack={() => open(null)}
+        documents={saved ? (kind) => Promise.resolve(saved[kind]) : undefined}
+      />
+    );
+  }
 
   const spotlight = [...report.candidates].sort((a, b) => b.naiveScore - b.score - (a.naiveScore - a.score))[0];
   const showSpotlight = spotlight && spotlight.naiveScore - spotlight.score >= INFLATION_GAP;

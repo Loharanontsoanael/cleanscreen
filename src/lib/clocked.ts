@@ -23,8 +23,11 @@ import type {
   FillResponse,
   GroundingTextRequest,
   GroundingResponse,
+  InjectionPdfTextRequest,
   InjectionTextRequest,
   InjectionResponse,
+  PdfTextResponse,
+  PiiPdfTextRequest,
   PiiTextRequest,
   PiiResponse,
   RerankRequest,
@@ -46,6 +49,12 @@ interface EndpointMap {
   rerank: [RerankRequest, RerankResponse];
 }
 export type EndpointName = keyof EndpointMap;
+
+/** The endpoints this app sends a PDF to, read as text, with the marked copy returned. */
+interface PdfEndpointMap {
+  pii: [PiiPdfTextRequest, PdfTextResponse<PiiResponse>];
+  injection: [InjectionPdfTextRequest, PdfTextResponse<InjectionResponse>];
+}
 
 /** One line of the audit trail: every Clocked call the analysis made and why. */
 export interface CallRecord {
@@ -198,4 +207,15 @@ export async function callClocked<E extends EndpointName>(
     }
     throw err;
   }
+}
+
+/** {@link callClocked} with a PDF in place of the text: the same call, typed for the PDF request and answer. */
+export function callClockedPdf<E extends keyof PdfEndpointMap>(
+  endpoint: E,
+  body: PdfEndpointMap[E][0],
+  purpose: string,
+  trail: CallRecord[],
+  options: CallOptions = {},
+): Promise<PdfEndpointMap[E][1]> {
+  return callClocked(endpoint, body as never, purpose, trail, options) as Promise<PdfEndpointMap[E][1]>;
 }

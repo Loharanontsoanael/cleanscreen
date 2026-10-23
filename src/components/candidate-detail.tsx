@@ -1,11 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Cancel01Icon, CheckmarkCircle02Icon, HelpCircleIcon } from "@hugeicons/core-free-icons";
+import { useState, type ReactNode } from "react";
+import { Cancel01Icon, CheckmarkCircle02Icon, Download04Icon, HelpCircleIcon } from "@hugeicons/core-free-icons";
 import type { CandidateReport, DuplicateFinding, Verdict } from "@/lib/types";
 import { glyph } from "./glyph";
 import { MarkedText } from "./marked-text";
 import { OutcomeBadge } from "./outcome";
+import { INFLATION_GAP } from "./shortlist";
+import { TwoReaders } from "./two-readers";
 import { UvLamp } from "./uv-lamp";
 import { verdictOf } from "./verdict";
 
@@ -51,14 +53,93 @@ function Proof({ c, duplicates }: { c: CandidateReport; duplicates: DuplicateFin
   );
 }
 
+export type DocumentKind = "blind" | "evidence";
+/** Where to get a copy of the PDF: a saved file in the demo, built on request in a live round. */
+export type DocumentSource = (kind: DocumentKind) => Promise<string>;
+
+/** The blind copy and the evidence PDF, fetched and saved on click. */
+function Downloads({ c, source }: { c: CandidateReport; source: DocumentSource }) {
+  const [busy, setBusy] = useState<DocumentKind | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const hidden = c.hidden.some((h) => h.page !== null);
+  const items: { kind: DocumentKind; label: string }[] = [
+    { kind: "blind", label: "Blind copy (PDF)" },
+    { kind: "evidence", label: hidden ? "Evidence PDF, hidden text boxed" : "Evidence PDF" },
+  ];
+  async function save(kind: DocumentKind) {
+    setBusy(kind);
+    setError(null);
+    try {
+      const a = document.createElement("a");
+      a.href = await source(kind);
+      a.download = `${c.label} - ${kind === "blind" ? "blind copy" : "evidence"}.pdf`;
+      a.click();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "The PDF could not be built.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-2.5">
+        {items.map((i) => (
+          <button key={i.kind} onClick={() => save(i.kind)} disabled={busy !== null} className="btn btn-secondary h-11 px-4 text-[14px] disabled:opacity-60">
+            {glyph(Download04Icon, 17)}
+            {busy === i.kind ? "Preparing…" : i.label}
+          </button>
+        ))}
+      </div>
+      {error && <p className="mt-2 text-sm text-alerte">{error}</p>}
+    </div>
+  );
+}
+
+/** Why a person should look, as a checklist the reviewer can work through. */
+function ReviewNotes({ reasons }: { reasons: string[] }) {
+  const [done, setDone] = useState<boolean[]>([]);
+  return (
+    <section className="mt-10 rounded-[20px] bg-brand-50 px-5 py-5 sm:px-6">
+      <h2 className="text-[15px] font-extrabold text-brand-900">Why a person should look</h2>
+      <ul className="mt-2.5 space-y-1">
+        {reasons.map((r, i) => (
+          <li key={i}>
+            <label className="flex cursor-pointer items-start gap-2.5 py-1 text-[15px] text-ink-700">
+              <input
+                type="checkbox"
+                checked={done[i] ?? false}
+                onChange={(e) => setDone((d) => Object.assign([...d], { [i]: e.target.checked }))}
+                className="peer sr-only"
+              />
+              <span
+                aria-hidden
+                className="mt-0.5 grid size-[18px] shrink-0 place-items-center rounded-[5px] border-2 border-brand-600 bg-white text-white peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-300"
+              >
+                {done[i] && (
+                  <svg viewBox="0 0 16 16" className="size-3.5">
+                    <path d="M3.5 8.5l3 3L12.5 5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
+              <span className={done[i] ? "text-ink-400 line-through" : undefined}>{r}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function CandidateDetail({
   candidate: c,
   duplicates,
   onBack,
+  documents,
 }: {
   candidate: CandidateReport;
   duplicates: DuplicateFinding[];
   onBack: () => void;
+  documents?: DocumentSource;
 }) {
   const hasHidden = c.hidden.some((h) => h.intent !== "benign") || c.injection.verdict !== "benign";
   const mine = duplicates.filter((d) => d.a === c.label || d.b === c.label);
@@ -77,11 +158,13 @@ export function CandidateDetail({
         <OutcomeBadge outcome={c.decision.outcome} />
       </div>
       <p className="mt-4 text-[1.35rem] leading-snug font-semibold text-brand-900">{verdictOf(c, mine.length > 0).sentence}</p>
-      {hasHidden && (
-        <p className="mt-2 text-ink-500">
-          Scored {c.score}/100 on what you can see. An AI reading the raw file would have scored it {c.naiveScore}/100.
-        </p>
+      {documents && <Downloads c={c} source={documents} />}
+      {c.naiveScore - c.score >= INFLATION_GAP && (
+        <div className="mt-10">
+          <TwoReaders score={c.score} naiveScore={c.naiveScore} />
+        </div>
       )}
+      {c.decision.reasons.length > 0 && <ReviewNotes reasons={c.decision.reasons} />}
 
       <div className="mt-10">
         <Proof c={c} duplicates={mine} />

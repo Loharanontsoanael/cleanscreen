@@ -97,7 +97,21 @@ export function ScreenOwn() {
   }
 
   const current = report?.candidates.find((c) => c.label === selected);
-  if (report && current) return <CandidateDetail candidate={current} duplicates={report.duplicates} onBack={() => open(null)} />;
+  if (report && current) {
+    // Uploads are screened as upload-1, upload-2…, in the order of `files`.
+    const file = files[Number(current.id.replace("upload-", "")) - 1];
+    const documents = file
+      ? async (kind: "blind" | "evidence") => {
+          const body = new FormData();
+          body.set("kind", kind);
+          body.set("resume", file);
+          const res = await fetch("/api/document", { method: "POST", body });
+          if (!res.ok) throw new Error(((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? "The PDF could not be built.");
+          return URL.createObjectURL(await res.blob());
+        }
+      : undefined;
+    return <CandidateDetail candidate={current} duplicates={report.duplicates} onBack={() => open(null)} documents={documents} />;
+  }
 
   if (report) {
     return (
