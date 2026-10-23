@@ -7,26 +7,13 @@ import { glyph } from "./glyph";
 import { MarkedText } from "./marked-text";
 import { OutcomeBadge } from "./outcome";
 import { UvLamp } from "./uv-lamp";
+import { verdictOf } from "./verdict";
 
 const VERDICT_ICON: Record<Verdict, ReactNode> = {
   met: <span className="text-pass" aria-label="Met">{glyph(CheckmarkCircle02Icon, 18, 2)}</span>,
   not_met: <span className="text-alerte" aria-label="Not met">{glyph(Cancel01Icon, 18, 2)}</span>,
   not_established: <span className="text-hold" aria-label="Not shown on the resume">{glyph(HelpCircleIcon, 18, 2)}</span>,
 };
-
-/** One plain sentence: what a reviewer needs to know first. */
-function verdict(c: CandidateReport, copied: boolean): string {
-  const hidden = c.hidden.find((h) => h.intent !== "benign");
-  if (hidden?.intent === "instruction_to_ai" || c.injection.verdict !== "benign") return "Hid instructions for the AI screener in the file.";
-  if (hidden) return "Hid a stronger resume in invisible text.";
-  if (c.code && c.code.verdict !== "benign") return "The take-home code tries to send secrets off the machine.";
-  if ((c.claims ?? []).some((x) => x.verdict === "contradicted" && x.probability >= 0.8)) return "Claims on the resume don’t match the references.";
-  if (copied) return "The resume is copied, sentence for sentence, from another applicant.";
-  if (c.coverLetterConflicts.length) return "The resume and the cover letter tell different stories.";
-  if (c.decision.outcome === "reject") return "Doesn’t meet a must-have requirement.";
-  if (c.decision.outcome === "human_review") return "Fit is unclear. Worth a closer look.";
-  return "Meets every must-have. Nothing to flag.";
-}
 
 /** The evidence for the verdict, shown once. */
 function Proof({ c, duplicates }: { c: CandidateReport; duplicates: DuplicateFinding[] }) {
@@ -89,7 +76,7 @@ export function CandidateDetail({
         <h1 className="title text-[2.4rem] leading-none">{c.label}</h1>
         <OutcomeBadge outcome={c.decision.outcome} />
       </div>
-      <p className="mt-4 text-[1.35rem] leading-snug font-semibold text-brand-900">{verdict(c, mine.length > 0)}</p>
+      <p className="mt-4 text-[1.35rem] leading-snug font-semibold text-brand-900">{verdictOf(c, mine.length > 0).sentence}</p>
       {hasHidden && (
         <p className="mt-2 text-ink-500">
           Scored {c.score}/100 on what you can see. An AI reading the raw file would have scored it {c.naiveScore}/100.
