@@ -1,29 +1,89 @@
-import type { CandidateReport, RequirementResult } from "./types";
+import type { CandidateReport } from "./types";
 
-/** A clearly-missed must-have only rejects when /decide is at least this sure. */
-export const REJECT_CONFIDENCE = 0.8;
+/**
+ * Every threshold the decision uses, in one place. Clocked returns probabilities; these say how
+ * sure it must be before CleanScreen acts on a verdict, and when a person should look instead.
+ */
+export const THRESHOLDS = {
+  /** A requirement verdict only counts when its own probability is at least this. */
+  requirementConfident: 0.6,
+  /** A must-have is "clearly not met" (not a match) at or above this. */
+  reject: 0.8,
+  /** A benign /injection verdict this close to the line still goes to a person. */
+  injectionReview: 0.3,
+  /** Hidden text classed harmless with less confidence than this goes to a person. */
+  hiddenHarmless: 0.6,
+  /** A claim contradicted at or above this is an integrity finding... */
+  contradiction: 0.8,
+  /** ...and between this and the line above, a reason for a closer look. */
+  contradictionReview: 0.5,
+} as const;
+
+export type Decision = CandidateReport["decision"];
+
+/** Hidden text normalised so the same hidden passage in two files compares equal. */
+export const hiddenKey = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+
+export interface RoundContext {
+  /** Normalised hidden text → labels of every applicant whose file contains it. */
+  hiddenElsewhere: Map<string, string[]>;
+  /** Labels of applicants whose resume text is copied from this one's. */
+  copiedWith: string[];
+}
+
+const pct = (p: number) => `${Math.round(p * 100)}%`;
 
 /**
  * The decision rule, enforced in code rather than left to a model:
- * - any integrity finding means a person reviews the application;
- * - otherwise every must-have met advances it, unless a check that should have run could not;
+ * - an integrity finding goes to a person (flagged);
  * - a must-have clearly not met is not a match;
- * - anything else is a closer look.
+ * - every must-have confidently met, with nothing uncertain and nothing unchecked, advances;
+ * - anything else is a closer look, with the reasons.
  */
-export function decideOutcome(input: {
-  integrityReasons: string[];
-  requirements: Pick<RequirementResult, "mustHave" | "verdict" | "probabilities">[];
-  /** Checks that applied to this application but failed to run. */
-  unchecked: string[];
-}): CandidateReport["decision"] {
-  const { integrityReasons, requirements, unchecked } = input;
-  if (integrityReasons.length) return { outcome: "flagged", reasons: [...integrityReasons] };
-  const mustHaves = requirements.filter((r) => r.mustHave);
-  if (mustHaves.some((r) => r.verdict === "not_met" && r.probabilities.not_met >= REJECT_CONFIDENCE)) {
+export function decide(c: CandidateReport, ctx: RoundContext): Decision {
+  const integrity: string[] = [];
+  const review: string[] = [];
+
+  for (const h of c.hidden) {
+    const others = (ctx.hiddenElsewhere.get(hiddenKey(h.text)) ?? []).filter((l) => l !== c.label);
+    const where = h.trick === "tag" ? "Hidden tag-character text" : `Hidden ${h.reason.replace("_", "-")} text`;
+    // Disguised words describe themselves ("12 zero-width characters inside words: ...").
+    if (h.intent === "obfuscation") integrity.push(h.text);
+    else if (h.intent === "benign") {
+      if (h.intentProbability < THRESHOLDS.hiddenHarmless) review.push(`${where} of unclear purpose`);
+    } else if (others.length && h.intent === "keyword_stuffing") {
+      // The same hidden keywords in several files usually come from a shared template, not intent.
+      review.push(`${where} also in ${others.join(", ")}: likely from a shared template`);
+    } else if (others.length) {
+      integrity.push(`${where}: the same instruction to the AI appears in ${others.join(", ")}`);
+    } else {
+      integrity.push(`${where}: ${h.intent === "instruction_to_ai" ? "an instruction to the AI" : "keyword stuffing"}`);
+    }
+  }
+
+  if (c.injection.verdict !== "benign") integrity.push(`Instruction aimed at the AI screener (${c.injection.category ?? c.injection.verdict})`);
+  else if (c.injection.probability >= THRESHOLDS.injectionReview) review.push(`Possible instruction to the AI screener (${pct(c.injection.probability)} likely)`);
+
+  for (const claim of c.claims ?? []) {
+    if (claim.verdict !== "contradicted") continue;
+    if (claim.probability >= THRESHOLDS.contradiction) integrity.push(`Claim contradicted by records: "${claim.claim}"`);
+    else if (claim.probability >= THRESHOLDS.contradictionReview) review.push(`Claim possibly contradicted by records: "${claim.claim}"`);
+  }
+  if (c.coverLetterConflicts.length) integrity.push("Resume and cover letter disagree");
+  if (c.code?.verdict === "malicious") integrity.push(`Take-home code is malicious: ${c.code.category ?? ""}`.trim());
+  else if (c.code && c.code.verdict !== "benign") review.push(`Take-home code looks ${c.code.verdict}: ${c.code.category ?? ""}`.trim());
+  for (const other of ctx.copiedWith) integrity.push(`Resume text copied with ${other}`);
+
+  if (integrity.length) return { outcome: "flagged", reasons: [...integrity, ...review] };
+
+  const mustHaves = c.requirements.filter((r) => r.mustHave);
+  if (mustHaves.some((r) => r.verdict === "not_met" && r.probabilities.not_met >= THRESHOLDS.reject)) {
     return { outcome: "reject", reasons: [] };
   }
-  if (mustHaves.every((r) => r.verdict === "met")) {
-    return unchecked.length ? { outcome: "human_review", reasons: unchecked.map((u) => `Not checked: ${u}`) } : { outcome: "advance", reasons: [] };
+  for (const r of mustHaves) {
+    if (r.probabilities[r.verdict] < THRESHOLDS.requirementConfident) review.push(`Uncertain: ${r.text} (${pct(r.probabilities[r.verdict])})`);
+    else if (r.verdict !== "met") review.push(`Not shown on the resume: ${r.text}`);
   }
-  return { outcome: "human_review", reasons: [] };
+  for (const u of c.unchecked) review.push(`Not checked: ${u}`);
+  return review.length ? { outcome: "human_review", reasons: review } : { outcome: "advance", reasons: [] };
 }

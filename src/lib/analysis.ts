@@ -3,7 +3,7 @@ import type { ChoiceAnswer, CompareFinding, ComparePair, ExtractedField, Injecti
 import { callClocked, ClockedUnavailable, describeClockedError, type CallRecord } from "./clocked";
 import { analysePdf, UnreadablePdf, type PdfForensics } from "./forensics";
 import { chunks, clip, LIMITS } from "./limits";
-import { decideOutcome } from "./policy";
+import { decide, hiddenKey } from "./policy";
 import type {
   CandidateInput,
   CandidateReport,
@@ -30,8 +30,6 @@ interface Run {
   signal?: AbortSignal;
 }
 
-/** A contradicted claim only becomes an integrity flag when the verdict is this confident. */
-const CONTRADICTION_THRESHOLD = 0.8;
 const TODAY = new Date().toISOString().slice(0, 10);
 
 const VERDICT_CRITERIA: Record<Verdict, string> = {
@@ -173,13 +171,21 @@ async function screenForInjection(text: string, run: Run): Promise<InjectionResp
  * The manipulation check on its own: instructions aimed at the AI screener anywhere in the
  * machine-readable text, and what each piece of hidden text is for. Also used by the benchmark.
  */
-export async function checkManipulation(pdf: PdfForensics, trail: CallRecord[], signal?: AbortSignal) {
+export async function checkManipulation(
+  pdf: PdfForensics,
+  trail: CallRecord[],
+  signal?: AbortSignal,
+): Promise<{ injection: InjectionResponse; intents: Pick<HiddenFinding, "intent" | "intentProbability">[] }> {
   const run: Run = { trail, signal };
-  // /decide reads at most 64 documents; a file with more hidden pieces than that is already
-  // conclusive, and the first 64 are classified.
+  // Disguised words (zero-width, direction controls, look-alike letters) are deliberate by
+  // construction and need no classifying. /decide reads at most 64 documents; a file with more
+  // hidden pieces than that is already conclusive, and the first 64 are classified.
+  const disguised = (h: PdfForensics["hidden"][number]) => h.reason === "unicode" && h.trick !== "tag";
   const hiddenDocs = pdf.hidden
+    .map((h, i) => ({ h, id: `hidden-${i}` }))
+    .filter(({ h }) => !disguised(h))
     .slice(0, LIMITS.decideDocuments)
-    .map((h, i) => ({ id: `hidden-${i}`, text: clip(h.text, LIMITS.decideDocumentChars) }));
+    .map(({ h, id }) => ({ id, text: clip(h.text, LIMITS.decideDocumentChars) }));
   const [injection, hiddenIntent] = await Promise.all([
     screenForInjection(pdf.machineText, run),
     hiddenDocs.length
@@ -188,7 +194,7 @@ export async function checkManipulation(pdf: PdfForensics, trail: CallRecord[], 
           {
             documents: hiddenDocs,
             instructions:
-              "Each document is text found in a resume file that a human reader cannot see (white, microscopic, off-page, invisible or metadata text).",
+              "Each document is text found in a resume file that a human reader cannot see (white, microscopic, off-page, invisible characters or metadata text).",
             questions: Object.fromEntries(
               hiddenDocs.map((d) => [
                 d.id,
@@ -213,7 +219,15 @@ export async function checkManipulation(pdf: PdfForensics, trail: CallRecord[], 
         )
       : null,
   ]);
-  return { injection, hiddenIntent };
+  const classified = new Set(hiddenDocs.map((d) => d.id));
+  const intents = pdf.hidden.map((h, i) => {
+    if (disguised(h)) return { intent: "obfuscation" as const, intentProbability: 1 };
+    const answer = hiddenIntent?.answers[`hidden-${i}`] as ChoiceAnswer | undefined;
+    // Hidden text beyond what /decide could classify is treated as suspicious, not harmless.
+    const intent = (answer?.choice ?? (classified.has(`hidden-${i}`) ? "benign" : "keyword_stuffing")) as HiddenFinding["intent"];
+    return { intent, intentProbability: answer?.probabilities?.[intent] ?? 0 };
+  });
+  return { injection, intents };
 }
 
 const PII_ENTITIES = {
@@ -269,7 +283,7 @@ async function analyseCandidate(
   // be screened fairly and the error stops it. The code check is secondary.
   step("Screening for manipulation and personal data");
   const codeWarning = "the take-home code";
-  const [{ injection, hiddenIntent }, pii, code] = await Promise.all([
+  const [{ injection, intents }, pii, code] = await Promise.all([
     checkManipulation(pdf, trail, signal),
     anonymise(pdf.visibleText, run),
     optional(
@@ -440,12 +454,7 @@ async function analyseCandidate(
     };
   });
 
-  const hidden: HiddenFinding[] = pdf.hidden.map((h, i) => {
-    const answer = hiddenIntent?.answers[`hidden-${i}`] as ChoiceAnswer | undefined;
-    // Hidden text beyond what /decide could classify is treated as suspicious, not harmless.
-    const intent = (answer?.choice ?? (i >= LIMITS.decideDocuments ? "keyword_stuffing" : "benign")) as HiddenFinding["intent"];
-    return { ...h, intent, intentProbability: answer?.probabilities?.[intent] ?? 0 };
-  });
+  const hidden: HiddenFinding[] = pdf.hidden.map((h, i) => ({ ...h, ...intents[i] }));
 
   const claims: ClaimCheck[] | null = grounding
     ? grounding.claims
@@ -520,19 +529,6 @@ async function analyseCandidate(
   );
   const f = scorecard?.fields;
 
-  // The decision is made in code: a model recommendation never overrides an integrity finding.
-  const integrityReasons: string[] = [];
-  for (const h of hidden) {
-    if (h.intent !== "benign") integrityReasons.push(`Hidden ${h.reason.replace("_", "-")} text: ${h.intent.replaceAll("_", " ")}`);
-  }
-  if (injection.verdict !== "benign") integrityReasons.push(`Instruction aimed at the AI screener (${injection.category ?? injection.verdict})`);
-  for (const c of claims ?? []) {
-    if (c.verdict === "contradicted" && c.probability >= CONTRADICTION_THRESHOLD) integrityReasons.push(`Claim contradicted by records: "${c.claim}"`);
-  }
-  if (coverLetterConflicts.length) integrityReasons.push("Resume and cover letter disagree");
-  if (code && code.verdict !== "benign") integrityReasons.push(`Take-home code is ${code.verdict}: ${code.category ?? ""}`.trim());
-  const decision = decideOutcome({ integrityReasons, requirements, unchecked });
-
   return {
     id: input.id,
     label,
@@ -588,8 +584,10 @@ async function analyseCandidate(
       summary: String(f?.summary?.value ?? ""),
       interviewQuestions: String(f?.interview_questions?.value ?? ""),
     },
-    decision,
+    // Decided once the whole round is read: some findings only show up across applicants.
+    decision: { outcome: "human_review", reasons: [] },
     warnings,
+    unchecked,
     trail,
   };
 }
@@ -663,14 +661,18 @@ export async function analyseRound(
         relation: p.relation,
         passages: copied.map((d) => ({ a: d.a?.quote ?? "", b: d.b?.quote ?? "", kind: d.kind ?? "" })),
       }));
-    for (const d of duplicates) {
-      for (const label of [d.a, d.b]) {
-        const c = candidates.find((x) => x.label === label);
-        if (!c) continue;
-        c.decision.reasons.push(`Resume text copied with ${label === d.a ? d.b : d.a}`);
-        c.decision.outcome = "flagged";
-      }
+  }
+
+  // The decision is made in code, never by a model: see policy.ts.
+  const hiddenElsewhere = new Map<string, string[]>();
+  for (const c of candidates) {
+    for (const key of new Set(c.hidden.filter((h) => h.reason !== "metadata").map((h) => hiddenKey(h.text)))) {
+      if (key) hiddenElsewhere.set(key, [...(hiddenElsewhere.get(key) ?? []), c.label]);
     }
+  }
+  for (const c of candidates) {
+    const copiedWith = duplicates.flatMap((d) => (d.a === c.label ? [d.b] : d.b === c.label ? [d.a] : []));
+    c.decision = decide(c, { hiddenElsewhere, copiedWith });
   }
 
   return {

@@ -40,7 +40,7 @@ export interface Span {
 
 export interface HiddenFinding extends HiddenSegment {
   /** What the hidden text is trying to do, as judged by /decide. */
-  intent: "instruction_to_ai" | "keyword_stuffing" | "benign";
+  intent: "instruction_to_ai" | "keyword_stuffing" | "obfuscation" | "benign";
   intentProbability: number;
 }
 
@@ -116,6 +116,8 @@ export interface CandidateReport {
   decision: { outcome: "advance" | "human_review" | "reject" | "flagged"; reasons: string[] };
   /** Secondary checks that could not run for this application. */
   warnings: string[];
+  /** Of those, the ones that applied to it; they keep it from advancing. */
+  unchecked: string[];
   trail: CallRecord[];
 }
 

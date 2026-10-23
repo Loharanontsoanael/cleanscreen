@@ -28,7 +28,7 @@ function fakeClocked(overrides: Record<string, (body: never) => unknown> = {}) {
         answers: Object.fromEntries(
           Object.keys(b.questions).map((id) => {
             const doc = b.documents?.find((d) => d.id === id);
-            const choice = doc ? (/rank|first/i.test(doc.text) ? "instruction_to_ai" : "benign") : "met";
+            const choice = doc ? (/rank|first/i.test(doc.text) ? "instruction_to_ai" : /kubernetes/i.test(doc.text) ? "keyword_stuffing" : "benign") : "met";
             return [id, { type: "choice", choice, probabilities: { [choice]: 0.95 } }];
           }),
         ),
@@ -65,8 +65,9 @@ const job: JobInput = {
   ],
 };
 
-async function applicant(id: string, trick = false, extra: Partial<CandidateInput> = {}): Promise<CandidateInput> {
-  const pdf = await resume(PROFILES[0], {}, trick ? { method: "white text", text: PAYLOADS.instruction } : undefined);
+async function applicant(id: string, trick: boolean | keyof typeof PAYLOADS = false, extra: Partial<CandidateInput> = {}): Promise<CandidateInput> {
+  const payload = trick === true ? "instruction" : trick;
+  const pdf = await resume(PROFILES[0], {}, payload ? { method: "white text", text: PAYLOADS[payload] } : undefined);
   return { id, fileName: `${id}.pdf`, resumePdf: pdf, evidence: [], ...extra };
 }
 
@@ -81,9 +82,19 @@ describe("analyseRound", () => {
       { id: "broken", fileName: "broken.pdf", resumePdf: new TextEncoder().encode("nope"), evidence: [] },
     ]);
     expect(report.candidates.map((c) => c.decision.outcome)).toEqual(["advance", "flagged"]);
-    expect(report.candidates[1].decision.reasons.join(" ")).toMatch(/instruction to ai/);
+    expect(report.candidates[1].decision.reasons.join(" ")).toMatch(/an instruction to the AI/);
     expect(report.failed).toEqual([{ file: "broken.pdf", error: "The file could not be opened as a PDF." }]);
     expect(new Set(calls.map((c) => c.endpoint))).toEqual(new Set(["injection", "decide", "pii", "extract", "rerank", "fill", "compare"]));
+  });
+
+  it("reads the same hidden keywords in several files as a shared template, not as one applicant's trick", async () => {
+    fakeClocked();
+    const report = await analyseRound(job, [await applicant("a", "keywords"), await applicant("b", "keywords"), await applicant("c", "instruction")]);
+    expect(report.candidates.map((c) => c.decision)).toEqual([
+      { outcome: "human_review", reasons: ["Hidden invisible text also in Candidate B: likely from a shared template"] },
+      { outcome: "human_review", reasons: ["Hidden invisible text also in Candidate A: likely from a shared template"] },
+      expect.objectContaining({ outcome: "flagged" }),
+    ]);
   });
 
   it("keeps going when a secondary step fails, and says what was not checked", async () => {

@@ -1,4 +1,5 @@
 import { analyseRound, type ProgressEvent } from "@/lib/analysis";
+import { CREDITS_PER_RESUME, CreditBudget } from "@/lib/budget";
 import { ClockedUnavailable } from "@/lib/clocked";
 import type { CandidateInput, JobInput, Requirement } from "@/lib/types";
 
@@ -7,6 +8,7 @@ export const maxDuration = 300;
 const MAX_FILES = 10;
 const MAX_BYTES = 3 * 1024 * 1024;
 const RUNS_PER_HOUR = Number(process.env.SCREEN_RUNS_PER_HOUR ?? 5);
+const budget = new CreditBudget(Number(process.env.DAILY_CREDIT_BUDGET ?? 3000));
 
 // Live runs spend real Clocked credits, so each visitor gets a few per hour. In memory on purpose:
 // nothing about a visitor or their files is stored.
@@ -63,6 +65,10 @@ export async function POST(request: Request) {
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (!allow(ip)) return fail(429, `You can screen ${RUNS_PER_HOUR} rounds an hour. Try again later, or explore the demo round.`);
+  const reservation = budget.reserve(candidates.length * CREDITS_PER_RESUME);
+  if (!reservation) {
+    return fail(503, "Today’s budget for live screening is spent. It resets at midnight UTC; the demo round shows a full screening meanwhile.");
+  }
 
   const job: JobInput = { title, description, requirements };
   const encoder = new TextEncoder();
@@ -74,6 +80,7 @@ export async function POST(request: Request) {
       try {
         // request.signal fires when the visitor leaves: pending Clocked calls are cancelled, not paid for.
         const report = await analyseRound(job, candidates, send, request.signal);
+        reservation.settle(report.trail.reduce((sum, t) => sum + (t.cached ? 0 : (t.credits ?? 0)), 0));
         send({ type: "report", report });
       } catch (err) {
         if (request.signal.aborted) return;

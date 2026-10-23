@@ -20,10 +20,10 @@ Applicant tracking systems were built to parse and rank resumes, not to check th
 
 ## What CleanScreen does
 
-1. **Reads the file twice.** Once as a person sees the rendered page, once as a text extractor reads it. Anything only the machine can read (white text, microscopic text, text off the page or under a shape, metadata) is flagged and classified.
+1. **Reads the file twice.** Once as a person sees the rendered page, once as a text extractor reads it. Anything only the machine can read (white text, microscopic text, text off the page or under a shape, metadata, invisible Unicode characters) is flagged and classified.
 2. **Scores it blind.** Name, contact details, age, location and family status are removed. Each job requirement is judged on the visible, anonymised resume, with the passage that proves it.
 3. **Checks the story.** Claims are verified against references and credential records, the resume against the cover letter and against other applicants, and take-home code is inspected before anything runs it.
-4. **Hands over a decision a person can act on.** One plain sentence, the evidence, a requirements checklist and interview questions aimed at what could not be verified. The policy is enforced in code: a model recommendation never overrides an integrity finding, and a person makes the final call.
+4. **Hands over a decision a person can act on.** One plain sentence, the evidence, a requirements checklist and interview questions aimed at what could not be verified. The policy is enforced in code: a model recommendation never overrides an integrity finding, an unsure verdict goes to a person instead of being acted on, and a person makes the final call.
 
 In the demo round, one applicant printed a whole senior role in white ink inside their experience section. **An AI reading the raw file scores them 90/100. CleanScreen, scoring the visible page, gives 1/100**, and the UV lamp on the applicant page shows exactly where the hidden role sits.
 
@@ -60,28 +60,55 @@ Every call is recorded with its purpose, model time and credits, and shown on th
 - **Account problems stop cleanly.** A rejected key, an exhausted credit balance or an inactive plan ends the screening with one clear message instead of failing applicant by applicant.
 - **Nothing wasted.** When a visitor leaves mid-screening, pending Clocked calls are cancelled through the SDK's `AbortSignal`.
 - **Files it cannot read.** Corrupt, password-protected, image-only (scanned) and over-long PDFs are rejected with a reason before any credit is spent.
-- **Tests without credits.** `npm test` runs 33 tests against generated PDFs and a fake Clocked client: hidden-text detection for every method, honest designs that must not be flagged, unreadable files, the decision policy, chunking, failed and cancelled calls. GitHub Actions runs lint, type checks, tests and a production build on every push.
+- **A daily credit ceiling.** Live screening reserves credits before a round starts and settles to what it spent; once the day's budget (`DAILY_CREDIT_BUDGET`) is used, `/run` says so and the saved demo round keeps working.
+- **Tests without credits.** `npm test` runs 49 tests against generated PDFs and a fake Clocked client: hidden-text and Unicode detection for every method, honest designs that must not be flagged, unreadable files, every branch of the decision policy, the credit budget, chunking, failed and cancelled calls. GitHub Actions runs lint, type checks, tests and a production build on every push.
+
+## Uncertain results, missing information and failed requests
+
+Clocked returns probabilities, not just labels. CleanScreen acts on a verdict only when it is sure enough, and every threshold lives in one place (`THRESHOLDS` in `src/lib/policy.ts`). Whatever falls short goes to a person with the reason written out, never to an automatic yes or no.
+
+| Situation | What CleanScreen does | Reason shown to the reviewer |
+| --- | --- | --- |
+| A must-have is judged met or not met with less than 60% confidence | Closer look, never advance or reject | "Uncertain: Python in production (55%)" |
+| A must-have is not shown on the resume | Closer look | "Not shown on the resume: …" |
+| A must-have is clearly not met (80% or more) | Not a match | |
+| `/injection` says benign, but at 30% or more | Closer look | "Possible instruction to the AI screener (40% likely)" |
+| Hidden text classed as harmless with less than 60% confidence | Closer look | "Hidden invisible text of unclear purpose" |
+| A claim contradicted by the records at 50 to 80% | Closer look (at 80% or more it is an integrity finding) | "Claim possibly contradicted by records: …" |
+| Take-home code judged suspicious rather than malicious | Closer look (malicious is flagged) | "Take-home code looks suspicious: …" |
+| The same hidden keywords in several applicants' files | Closer look: usually a shared template, not intent | "Hidden invisible text also in Candidate C: likely from a shared template" |
+| The same hidden instruction to the AI in several files | Flagged | "… the same instruction to the AI appears in Candidate C" |
+| A secondary request fails (references, cover letter, code) | Screened without it, cannot advance | "Not checked: claims against the references" |
+| An essential request fails (manipulation check, anonymisation, blind judgment) | That applicant is not screened; the others are | Listed under files that could not be screened |
+| The account is out of credits, or the key is rejected | The round stops with one message | |
+| The PDF is scanned, encrypted, corrupt or too long | Rejected before any credit is spent | The reason, per file |
+
+Decisions are made once the whole round is read, because some findings (copied resumes, shared hidden text) only show up across applicants.
 
 ## How the hidden-text detection works
 
 Detection is visual, not a list of tricks. Each PDF page is rendered with MuPDF and every run of text is located on the bitmap: a run that leaves no ink where it should be is hidden, whatever produced it (white on white, colour matched to a background, invisible render mode, covered by a shape). Runs smaller than 4 pt or mostly outside the page are flagged too, and the Subject and Keywords metadata fields are read as hidden text. Clocked then judges what the hidden text is for.
 
+Some tricks leave nothing to see because they live in the characters, not the ink. A font's ToUnicode table can say that a glyph drawing nothing means a whole sentence, or that the "o" on the page is a Cyrillic "о". CleanScreen reads the extracted characters for four of these: Unicode tag characters (invisible copies of ASCII, decoded and judged like any hidden text), zero-width characters, direction overrides that reorder what is displayed, and Latin words spelled with look-alike Cyrillic or Greek letters. Russian or Arabic words, direction marks in right-to-left text, "μs", flag emoji and a stray zero-width space from copy and paste are left alone. `/injection` then reads the words with the invisible characters taken out, so splitting a phrase with zero-width spaces does not hide it.
+
+Building these tests surfaced a bug worth knowing: mupdf.js passes each extracted character through `String.fromCharCode`, which drops the high bits of anything beyond U+FFFF. An invisible tag character U+E0052 arrived as a visible "R", so a tag-encoded instruction would have been read as text on the page. CleanScreen now matches each character back to the page's full text export.
+
 On a real two-page resume this produced no false alarm: the visible and the machine-readable text were identical.
 
 ## Benchmark
 
-`scripts/benchmark.ts` generates 40 resumes and runs each through the same manipulation check the app uses (PDF forensics, then `/injection` and `/decide`).
+`scripts/benchmark.ts` generates 49 resumes and runs each through the same manipulation check the app uses (PDF forensics, then `/injection` and `/decide`).
 
-- **30 attacks:** nine ways of hiding text (white, near-white, 1 pt, 3 pt, off the page, invisible render mode, covered by a shape, PDF Subject, PDF Keywords), each carrying three payloads (an instruction to the AI, keyword stuffing, a fake senior role), plus three instructions printed in plain sight.
-- **10 honest resumes built to look suspicious:** a dark sidebar with white text, light grey dates, a 7 pt footer, a coloured header band, ordinary "Curriculum vitae" metadata, two pages, and resumes that mention prompt engineering and prompt-injection red-teaming as skills.
+- **37 attacks:** eleven ways of hiding text (white, near-white, 1 pt, 3 pt, off the page, invisible render mode, covered by a shape, PDF Subject, PDF Keywords, Unicode tag characters, a message in zero-width characters), each carrying three payloads (an instruction to the AI, keyword stuffing, a fake senior role), skills spelled with look-alike letters, and three instructions printed in plain sight.
+- **12 honest resumes built to look suspicious:** a dark sidebar with white text, light grey dates, a 7 pt footer, a coloured header band, ordinary "Curriculum vitae" metadata, two pages, Russian and Arabic text with direction marks and "μs", stray zero-width spaces, and resumes that mention prompt engineering and prompt-injection red-teaming as skills.
 
 | | Result |
 | --- | --- |
-| Attacks caught | **30 / 30** |
-| False alarms on honest resumes | **0 / 10** |
-| Cost of the whole run | 69 Clocked calls, about 150 credits |
+| Attacks caught | **37 / 37** |
+| False alarms on honest resumes | **0 / 12** |
+| Cost of the whole run | 79 Clocked calls, about 175 credits |
 
-The first run raised two false alarms: ordinary metadata such as "Subject: Curriculum vitae" was read as keyword stuffing. Metadata that only names the document or repeats words from the page is now ignored; real metadata attacks are still caught. Per-case results are in `data/benchmark/results.json`. Re-run with `node --env-file=.env.local --conditions=react-server --import tsx scripts/benchmark.ts`.
+The first run raised two false alarms: ordinary metadata such as "Subject: Curriculum vitae" was read as keyword stuffing. Metadata that only names the document or repeats words from the page is now ignored; real metadata attacks are still caught. A fixture that put a name and a greeting in two scripts after "Languages:" was flagged by `/injection`, fairly: the line made no sense. The honest multilingual resume now lists languages the way people do. Per-case results are in `data/benchmark/results.json`. Re-run with `node --env-file=.env.local --conditions=react-server --import tsx scripts/benchmark.ts`.
 
 ## The demo round
 
@@ -124,14 +151,16 @@ npm run dev                    # http://localhost:3000
 | `CLOCKED_API_KEY` | (required) | Clocked account key, server-side only |
 | `CLOCKED_CONCURRENCY` | `4` | Concurrent Clocked requests |
 | `SCREEN_RUNS_PER_HOUR` | `5` | Live screenings per visitor per hour |
+| `DAILY_CREDIT_BUDGET` | `3000` | Clocked credits live screening may spend per day (UTC) |
 | `SCREEN_DISABLED` | unset | Set to `1` to pause live screening |
 
 ## Where things live
 
 - `src/lib/forensics.ts`: the person-versus-machine reading of a PDF.
-- `src/lib/analysis.ts`: the screening pipeline, the Clocked calls and the decision policy.
+- `src/lib/analysis.ts`: the screening pipeline and the Clocked calls.
 - `src/lib/clocked.ts`: the Clocked client wrapper (concurrency, retries, cancellation, error handling, audit trail, dev cache).
-- `src/lib/limits.ts` and `src/lib/policy.ts`: the documented API limits, and the decision rule.
+- `src/lib/policy.ts`: the decision rule and every threshold it uses.
+- `src/lib/limits.ts` and `src/lib/budget.ts`: the documented API limits, and the daily credit ceiling.
 - `tests/`: the test suite; `scripts/fixtures.ts` generates the resumes it and the benchmark use.
 - `src/app/api/screen/route.ts`: live screening, streamed as NDJSON.
 - `src/components/`: the shortlist, the applicant page and the UV lamp.
