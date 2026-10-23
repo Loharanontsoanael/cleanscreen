@@ -25,7 +25,7 @@ Applicant tracking systems were built to parse and rank resumes, not to check th
 3. **Checks the story.** Claims are verified against references and credential records, the resume against the cover letter and against other applicants, and take-home code is inspected before anything runs it.
 4. **Hands over a decision a person can act on.** One plain sentence, the evidence, a requirements checklist and interview questions aimed at what could not be verified. The policy is enforced in code: a model recommendation never overrides an integrity finding, and a person makes the final call.
 
-In the demo round, one applicant printed a whole senior role in white ink inside their experience section. **An AI reading the raw file scores them 91/100. CleanScreen, scoring the visible page, gives 1/100**, and the UV lamp on the applicant page shows exactly where the hidden role sits.
+In the demo round, one applicant printed a whole senior role in white ink inside their experience section. **An AI reading the raw file scores them 90/100. CleanScreen, scoring the visible page, gives 1/100**, and the UV lamp on the applicant page shows exactly where the hidden role sits.
 
 ![Applicants as stamped resume sheets](docs/shortlist.png)
 
@@ -40,7 +40,7 @@ Every endpoint changes what the app does or shows. All calls run server-side wit
 | Endpoint | What CleanScreen asks it | What changes in the app |
 | --- | --- | --- |
 | **/injection** | Does the machine-readable text try to instruct, steer or override the AI screener? | Flags the application and highlights the exact passage (spans) on the resume. |
-| **/decide** | (1) What is each hidden passage trying to do: instruction to the AI, keyword stuffing or harmless? (2) Is each job requirement met, not met or not shown? (3) The same question on the raw file, as a naive screener would see it. | Classifies hidden text; drives the requirements checklist and the fit score; the counterfactual produces the "an AI would have said 91" comparison. |
+| **/decide** | (1) What is each hidden passage trying to do: instruction to the AI, keyword stuffing or harmless? (2) Is each job requirement met, not met or not shown? (3) The same question on the raw file, as a naive screener would see it. | Classifies hidden text; drives the requirements checklist and the fit score; the counterfactual produces the "an AI reading the file: 90" comparison. |
 | **/pii** | Which spans are names, emails, phones, addresses, locations, dates of birth or family status? | Produces the anonymised copy that every scoring step reads (blind screening). |
 | **/extract** | Roles, skills, education and certifications, verbatim with positions. | Builds the structured profile behind the scorecard. |
 | **/rerank** | Which resume and reference passages answer each requirement? | Shows the proof behind each requirement verdict. |
@@ -49,7 +49,7 @@ Every endpoint changes what the app does or shows. All calls run server-side wit
 | **/script** | Is the take-home submission safe to run, and which lines are the problem? | Blocks the grader and shows the offending lines (e.g. reading `~/.aws/credentials` and posting it out). |
 | **/fill** | A scorecard: seniority, next-step recommendation, summary and interview questions targeted at unverified claims. | Seniority label, interview questions; the recommendation is kept for reference, while the policy in code makes the decision. |
 
-Every call is recorded with its purpose, model time and credits, and shown on the applicant page under "How this was decided". The demo round of ten applicants used **121 calls and 668 credits** (about **67 credits, or roughly 1.3 cents, per applicant**), with about 15 seconds of total model time.
+Every call is recorded with its purpose, model time and credits, and shown on the applicant page under "How this was decided". The demo round of ten applicants used **121 calls and 660 credits** (about **66 credits, or roughly 1.3 US cents, per applicant**), with about 15 seconds of total model time.
 
 ## Reliability and Clocked best practices
 
@@ -90,7 +90,7 @@ Ten fictional applicants for a Senior Data Engineer role, each with a different 
 | Applicant | Situation | Outcome |
 | --- | --- | --- |
 | A | Strong, honest, references confirm the claims | Interview |
-| B | A senior role written in white ink | Hidden text (raw file 91, visible page 1) |
+| B | A senior role written in white ink | Hidden text (raw file 90, visible page 1) |
 | C | Microscopic note telling the AI to rank them first | AI prompt |
 | D | Instructions to the AI in the PDF metadata | AI prompt |
 | E | Team lead and certification the references contradict | False claims |
