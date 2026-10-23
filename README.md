@@ -8,6 +8,8 @@
 
 ![CleanScreen home page](docs/hero.png)
 
+[![The 90-second demo: a person's reading scores 1, an AI reading the raw file scores 90](docs/video-poster.png)](https://cleanscreen.vercel.app/cleanscreen-demo.mp4)
+
 **▶ [Watch the 90-second demo](https://cleanscreen.vercel.app/cleanscreen-demo.mp4)** (recorded on the live site, including a live screening of four sample applicants)
 
 ## Three minutes for judges
