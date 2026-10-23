@@ -1,7 +1,7 @@
 import { analyseRound, type ProgressEvent } from "@/lib/analysis";
 import { CREDITS_PER_RESUME, liveBudget } from "@/lib/budget";
 import { ClockedUnavailable } from "@/lib/clocked";
-import type { CandidateInput, JobInput, Requirement } from "@/lib/types";
+import type { CandidateInput, JobInput, Requirement, RoundReport } from "@/lib/types";
 
 export const maxDuration = 300;
 
@@ -24,7 +24,10 @@ function fail(status: number, error: string) {
   return Response.json({ error }, { status });
 }
 
-/** Screens uploaded resumes against a job, streaming progress as NDJSON and ending with the report. */
+/**
+ * Screens uploaded resumes against a job. By default progress streams as NDJSON and ends with the
+ * report; with `Accept: application/json`, the report comes back as one JSON response.
+ */
 export async function POST(request: Request) {
   if (process.env.SCREEN_DISABLED === "1") return fail(503, "Live screening is paused. The demo round still works.");
 
@@ -70,6 +73,21 @@ export async function POST(request: Request) {
   }
 
   const job: JobInput = { title, description, requirements };
+  const spent = (report: RoundReport) => report.trail.reduce((sum, t) => sum + (t.cached ? 0 : (t.credits ?? 0)), 0);
+
+  // A client that asks for JSON (an ATS, a script) gets the finished report in one response.
+  if (request.headers.get("accept")?.includes("application/json")) {
+    try {
+      const report = await analyseRound(job, candidates, () => {}, request.signal);
+      reservation.settle(spent(report));
+      return Response.json(report, { headers: { "Cache-Control": "no-store" } });
+    } catch (err) {
+      if (err instanceof ClockedUnavailable) return fail(503, err.message);
+      console.error("screening failed", err);
+      return fail(502, "Screening stopped before it finished. Please try again.");
+    }
+  }
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -79,7 +97,7 @@ export async function POST(request: Request) {
       try {
         // request.signal fires when the visitor leaves: pending Clocked calls are cancelled, not paid for.
         const report = await analyseRound(job, candidates, send, request.signal);
-        reservation.settle(report.trail.reduce((sum, t) => sum + (t.cached ? 0 : (t.credits ?? 0)), 0));
+        reservation.settle(spent(report));
         send({ type: "report", report });
       } catch (err) {
         if (request.signal.aborted) return;

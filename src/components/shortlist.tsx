@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { glyph } from "./glyph";
+import { auditReport, roundCsv } from "@/lib/export";
 import type { CandidateReport, RoundReport } from "@/lib/types";
 import { isCopied, verdictOf } from "./verdict";
 
@@ -69,6 +70,13 @@ function SheetLines({ seed }: { seed: string }) {
 /** Each application as a small resume sheet, stamped with what to do next. */
 export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (label: string) => void }) {
   const credits = report.trail.reduce((s, t) => s + (t.credits ?? 0), 0);
+  const save = (text: string, type: string, ext: string) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = `${report.job.title} - ${ext === "csv" ? "shortlist" : "screening audit"}.${ext}`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
   const row = useRef<HTMLUListElement>(null);
   const scroll = (dir: 1 | -1) => row.current?.scrollBy({ left: dir * 440, behavior: "smooth" });
   const rows = [...report.candidates].sort(
@@ -137,7 +145,15 @@ export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (la
       )}
       {report.warnings?.length > 0 && <p className="mt-3 text-[13px] text-ink-400">Not checked: {report.warnings.join("; ")}.</p>}
       <p className="mt-2 text-[13px] text-ink-400">
-        {report.candidates.length} applicant{report.candidates.length > 1 ? "s" : ""} screened with {credits.toLocaleString()} Clocked credits.
+        {report.candidates.length} applicant{report.candidates.length > 1 ? "s" : ""} screened with {credits.toLocaleString()} Clocked credits.{" "}
+        Export, without names:{" "}
+        <button onClick={() => save(roundCsv(report), "text/csv", "csv")} className="font-semibold text-ink-500 underline-offset-2 hover:text-brand-600 hover:underline">
+          CSV
+        </button>
+        {" · "}
+        <button onClick={() => save(auditReport(report), "text/markdown", "md")} className="font-semibold text-ink-500 underline-offset-2 hover:text-brand-600 hover:underline">
+          audit report
+        </button>
       </p>
     </div>
   );
