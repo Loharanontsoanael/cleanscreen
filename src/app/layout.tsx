@@ -35,8 +35,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </Link>
         </header>
         {children}
-        <footer className="mx-auto mt-16 flex max-w-[1160px] flex-wrap items-center justify-between gap-3 border-t-[1.5px] border-rule px-5 py-8 sm:px-7">
-          <LogoMark size={26} />
+        <footer className="mx-auto mt-16 flex max-w-[1160px] items-center gap-3 border-t-[1.5px] border-rule px-5 py-8 sm:justify-between sm:px-7">
+          <span className="shrink-0">
+            <LogoMark size={26} />
+          </span>
           <span className="text-[13px] text-ink-400">
             Built on Clocked for the Clocked Build Challenge. Every applicant in the demo is fictional.
           </span>

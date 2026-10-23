@@ -98,16 +98,20 @@ export function HowItWorks() {
 export function FinalCta() {
   return (
     <section className="mx-auto mt-24 max-w-[1160px] px-5 sm:px-7">
-      <div className="relative isolate overflow-hidden rounded-[32px] bg-brand-600 px-7 py-12 text-white sm:px-12">
+      <div className="relative isolate overflow-hidden rounded-[32px] bg-brand-600 px-6 py-12 text-white sm:px-12">
         <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(30rem_16rem_at_90%_0%,rgb(255_255_255/0.2),transparent_70%)]" />
         <h2 className="max-w-[20ch] text-[2rem] leading-tight font-extrabold tracking-[-0.03em] sm:text-[2.6rem]">
           Screen your next round on what applicants actually show you.
         </h2>
-        <div className="mt-7 flex flex-wrap gap-3.5">
-          <Link href="/run" className="btn bg-white text-brand-700 hover:bg-brand-50">
-            Screen my resumes
+        <div className="mt-7 flex gap-2.5 sm:gap-3.5">
+          <Link href="/run" className="btn bg-white text-brand-700 hover:bg-brand-50 max-sm:h-11 max-sm:px-3.5 max-sm:text-[14px]">
+            <span className="sm:hidden">Screen resumes</span>
+            <span className="hidden sm:inline">Screen my resumes</span>
           </Link>
-          <a href="https://github.com/Loharanontsoanael/cleanscreen" className="btn border-white/60 text-white hover:bg-white/10">
+          <a
+            href="https://github.com/Loharanontsoanael/cleanscreen"
+            className="btn border-white/60 text-white hover:bg-white/10 max-sm:h-11 max-sm:px-3.5 max-sm:text-[14px]"
+          >
             Read the code
           </a>
         </div>
