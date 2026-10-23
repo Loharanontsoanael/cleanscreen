@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { glyph } from "./glyph";
 import type { CandidateReport, RoundReport } from "@/lib/types";
 import { isCopied, verdictOf } from "./verdict";
 
@@ -67,17 +69,33 @@ function SheetLines({ seed }: { seed: string }) {
 /** Each application as a small resume sheet, stamped with what to do next. */
 export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (label: string) => void }) {
   const credits = report.trail.reduce((s, t) => s + (t.credits ?? 0), 0);
+  const row = useRef<HTMLUListElement>(null);
+  const scroll = (dir: 1 | -1) => row.current?.scrollBy({ left: dir * 440, behavior: "smooth" });
   const rows = [...report.candidates].sort(
     (a, b) => ORDER.indexOf(a.decision.outcome) - ORDER.indexOf(b.decision.outcome) || b.score - a.score,
   );
   return (
-    <div className="mt-8">
-      <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="mt-2">
+      <div className="mb-3 flex justify-end gap-2">
+        {([[-1, ArrowLeft01Icon, "Previous applicants"], [1, ArrowRight01Icon, "More applicants"]] as const).map(([d, icon, label]) => (
+          <button
+            key={d}
+            onClick={() => scroll(d)}
+            aria-label={label}
+            className="grid size-10 place-items-center rounded-full border-[1.5px] border-ink-200 bg-white text-brand-900 hover:border-brand-400 hover:text-brand-600"
+          >
+            {glyph(icon, 18, 2)}
+          </button>
+        ))}
+      </div>
+      {/* One row of sheets that scrolls sideways; the fade on the right says there is more. */}
+      <div className="relative -mx-5 sm:-mx-7">
+      <ul ref={row} className="flex snap-x snap-mandatory scroll-px-5 gap-5 overflow-x-auto scroll-smooth px-5 pt-2 pb-6 [scrollbar-width:thin] sm:scroll-px-7 sm:px-7">
         {rows.map((c) => {
           const v = verdictOf(c, isCopied(c, report.duplicates));
           const inflated = c.naiveScore - c.score >= INFLATION_GAP;
           return (
-            <li key={c.label}>
+            <li key={c.label} className="w-[46vw] max-w-[210px] shrink-0 snap-start sm:w-[200px]">
               <button onClick={() => onOpen(c.label)} className="group block w-full text-left">
                 <span className="relative block aspect-[210/297] overflow-hidden rounded-[4px] border border-ink-100 bg-white px-[9%] py-[10%] shadow-[0_1px_2px_rgb(15_27_45/0.08),0_14px_30px_-14px_rgb(15_27_45/0.35)] transition-transform duration-150 group-hover:-translate-y-1 group-hover:-rotate-1">
                   <SheetLines seed={c.label} />
@@ -101,7 +119,9 @@ export function Shortlist({ report, onOpen }: { report: RoundReport; onOpen: (la
           );
         })}
       </ul>
-      <p className="mt-8 text-[13px] text-ink-400">
+      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
+      </div>
+      <p className="mt-2 text-[13px] text-ink-400">
         {report.candidates.length} applicant{report.candidates.length > 1 ? "s" : ""} screened with {credits.toLocaleString()} Clocked credits.
       </p>
     </div>
