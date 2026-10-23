@@ -1,5 +1,7 @@
 # CleanScreen
 
+[![CI](https://github.com/Loharanontsoanael/cleanscreen/actions/workflows/ci.yml/badge.svg)](https://github.com/Loharanontsoanael/cleanscreen/actions/workflows/ci.yml)
+
 **Resume screening you can't trick.** CleanScreen scores the resume a person actually sees, with identity removed, checks what applicants claim against their references, and explains every decision. Built on all nine [Clocked](https://clocked.rezolve.ai) endpoints for the Clocked Build Challenge.
 
 **Live demo: [cleanscreen.vercel.app](https://cleanscreen.vercel.app)** · no sign-up · every applicant in the demo is fictional
