@@ -8,6 +8,16 @@
 
 ![CleanScreen home page](docs/hero.png)
 
+**▶ [Watch the 90-second demo](https://cleanscreen.vercel.app/cleanscreen-demo.mp4)** (recorded on the live site, including a live screening of four sample applicants)
+
+## Three minutes for judges
+
+1. **The demo round** ([cleanscreen.vercel.app](https://cleanscreen.vercel.app), scroll to the shortlist): ten fictional applicants, each stamped with a next step.
+2. **Candidate B**: a person's reading scores 1, an AI reading the raw file scores 90. Move the UV lamp over the resume to find the hidden role, then download the evidence PDF (hidden text boxed) and the blind copy (identity redacted by `/pii`).
+3. **Candidates E and I**: claims contradicted by a reference letter and a certification lookup (`/grounding`), and take-home code that posts AWS credentials to a server (`/script`). "How this was decided" at the bottom of each page lists every Clocked call.
+4. **Live**: on [/run](https://cleanscreen.vercel.app/run), press "Try sample applicants", then "Screen 4 applicants". All nine endpoints run live in under a minute.
+5. **The record**: export the round's audit report from the shortlist, and read the [system card](docs/system-card.md) for intended use, evaluation and limitations.
+
 ## The problem
 
 Applicants have learned that an AI reads their resume first, and some write for the AI instead of the recruiter.
@@ -195,6 +205,8 @@ npm run dev                    # http://localhost:3000
 - `src/components/`: the shortlist, the applicant page and the UV lamp.
 
 ## Privacy and limits
+
+The [system card](docs/system-card.md) covers intended use, the decision rule, evaluation, known limitations, fairness and human oversight in full.
 
 - Uploaded resumes are read, screened and forgotten: nothing is stored by CleanScreen. Text is sent to Clocked for analysis.
 - CleanScreen recommends; a person decides. Every flag says why and shows the passage behind it.
